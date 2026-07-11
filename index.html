@@ -22,10 +22,10 @@ header{background:linear-gradient(135deg,#1a0a3e,#0d0920);padding:13px 16px;bord
 .wrap{max-width:460px;margin:0 auto}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:12px}
 .ctitle{font-size:.68rem;color:var(--muted);letter-spacing:.1em;margin-bottom:10px}
-.score-card{background:linear-gradient(160deg,#1e0a45 0%,#0d1535 100%);border:1px solid #3d2070;text-align:center;padding:22px 14px 18px}
+.score-card{background:radial-gradient(ellipse at 50% 0%,rgba(212,160,23,.06),transparent 62%),linear-gradient(160deg,#1e0a45 0%,#0d1535 100%);border:1px solid #3d2070;text-align:center;padding:22px 14px 18px}
 .sc-date{font-size:.8rem;color:var(--muted);margin-bottom:8px}
 .sc-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:10px}
-.sc-num{font-size:4.5rem;font-weight:800;line-height:1;color:var(--gold-l)}
+.sc-num{font-size:4.5rem;font-weight:800;line-height:1;color:var(--gold-l);text-shadow:0 0 24px currentColor}
 .sc-right{text-align:left}
 .sc-level{font-size:1.5rem;font-weight:700;line-height:1}
 .sc-label{font-size:.72rem;color:var(--muted);margin-top:3px}
@@ -40,14 +40,16 @@ header{background:linear-gradient(135deg,#1a0a3e,#0d0920);padding:13px 16px;bord
 .moon-name{font-size:.98rem;font-weight:600}
 .moon-desc{font-size:.74rem;color:var(--muted);margin-top:2px}
 .comp-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;max-width:260px;margin:0 auto}
-.cd{border-radius:9px;padding:7px 3px;text-align:center;border:1.5px solid}
-.cd.good{background:#052d14;border-color:#166534;color:var(--good)}
-.cd.bad{background:#2d0505;border-color:#7f1d1d;color:var(--bad)}
-.cd.neutral{background:#160a30;border-color:var(--border);color:var(--muted)}
-.cd.center{background:#0d0920;border-color:var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem}
-.cd-dir{font-size:.65rem;margin-bottom:2px}
+.cd{border-radius:9px;padding:4px 3px;text-align:center;border:1.5px solid;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cd.good{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.35);color:var(--good)}
+.cd.bad{background:rgba(248,113,113,.07);border-color:rgba(248,113,113,.30);color:var(--bad)}
+.cd.bad.warn{border-color:rgba(248,113,113,.55)}
+.cd.neutral{background:#120826;border-color:#20143f;color:var(--muted)}
+.cd.center{background:#0d0920;border-color:var(--border);border-radius:50%;font-size:1rem;box-shadow:inset 0 0 12px rgba(212,160,23,.15)}
+.cd-dir{font-size:.65rem;margin-bottom:2px;color:var(--muted)}
 .cd-lbl{font-size:.62rem;font-weight:700}
 .cd-star{font-size:.58rem;opacity:.75;margin-top:2px}
+.act-no{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.4);color:var(--gold-l);font-size:.72rem;font-weight:700}
 .act-item{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid #1e1440}
 .act-item:last-child{border-bottom:none}
 .act-ic{font-size:1rem;flex-shrink:0;margin-top:1px}
@@ -70,11 +72,12 @@ header{background:linear-gradient(135deg,#1a0a3e,#0d0920);padding:13px 16px;bord
 .cal-num.sun{color:#f87171}.cal-num.sat{color:#60a5fa}
 .cal-dots{display:flex;gap:2px;justify-content:center;flex-wrap:wrap}
 .dot{width:5px;height:5px;border-radius:50%}
-.dot.tensha{background:#86efac}.dot.manbai{background:#a3e635}
-.dot.newmoon{background:#60a5fa}.dot.fullmoon{background:var(--gold-l)}
+.dot.tensha{background:#f5c842}.dot.manbai{background:#4ade80}
+.dot.newmoon{background:#60a5fa}.dot.fullmoon{background:#e5e7eb}
 .cal-score{height:3px;border-radius:2px;margin:2px 3px 0}
-.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.legend{display:flex;gap:8px 12px;flex-wrap:wrap;margin-top:10px;background:var(--card);border-radius:10px;padding:8px 12px}
 .leg{display:flex;align-items:center;gap:4px;font-size:.7rem;color:var(--muted)}
+.leg-bar{width:16px;height:3px;border-radius:2px;background:linear-gradient(90deg,#ef4444,#64748b,#3b82f6,#22c55e,#d4a017)}
 .s-label{font-size:.78rem;color:var(--muted);margin-bottom:7px}
 input[type=date].s-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-size:.95rem;outline:none;font-family:inherit}
 input[type=date].s-input:focus{border-color:var(--gold)}
@@ -198,6 +201,8 @@ input[type=date].s-input:focus{border-color:var(--gold)}
     <div class="leg"><div class="dot manbai"></div>一粒万倍日</div>
     <div class="leg"><div class="dot newmoon"></div>新月</div>
     <div class="leg"><div class="dot fullmoon"></div>満月</div>
+    <div class="leg">📌 予定あり</div>
+    <div class="leg"><div class="leg-bar"></div>バーの色＝運気</div>
   </div>
 </div></div>
 <div id="sc-compat" class="screen"><div class="wrap" id="compatWrap"></div></div>
@@ -815,7 +820,8 @@ function renderToday() {
   const compHTML = gridOrder.map(gi => {
     if (gi === -1) return `<div class="cd center">☯</div>`;
     const d = ld[gi];
-    return `<div class="cd ${d.type}">
+    const warn = (d.lbl === '五黄殺' || d.lbl === '暗剣殺') ? ' warn' : '';
+    return `<div class="cd ${d.type}${warn}">
       <div class="cd-dir">${d.dir}</div>
       <div class="cd-lbl">${d.lbl || '—'}</div>
       <div class="cd-star">${STARS[d.star].name.slice(0,2)}</div>
@@ -826,12 +832,12 @@ function renderToday() {
   const acts = [];
   if (tensha) acts.push({ic:'☀️', t:'天赦日 — 全ての罪が許される最強の開運日！新しいことを始めるのに最適。', sp:true});
   if (manbai) acts.push({ic:'🌱', t:'一粒万倍日 — 種まきの日。小さな行動が大きな実りになる。', sp:true});
-  STARS[bs].acts.forEach(a => acts.push({ic:'⭐', t:a}));
+  STARS[bs].acts.forEach((a,i) => acts.push({num:i+1, t:a}));
   if (!tensha && !manbai && ds !== bs)
     acts.push({ic:'💫', t:`今日の日盤は${STARS[ds].name}。${STARS[ds].acts[0]}`});
 
   const actsHTML = acts.slice(0,5).map(a =>
-    `<div class="act-item${a.sp?' sp':''}"><span class="act-ic">${a.ic}</span><span class="act-txt">${a.t}</span></div>`
+    `<div class="act-item${a.sp?' sp':''}"><span class="act-ic">${a.num?`<span class="act-no">${a.num}</span>`:a.ic}</span><span class="act-txt">${a.t}</span></div>`
   ).join('');
 
   const avoidHTML = STARS[bs].avoid.map(a => `<span class="avoid-tag">⚠ ${a}</span>`).join('');
@@ -935,12 +941,11 @@ function renderToday() {
         </div>
       </div>
       <div class="sc-bar-bg"><div class="sc-bar" style="width:${sc}%;background:${sl.bar}"></div></div>
-    </div>
-
-    <div class="badges">
-      <span class="bdg bdg-star">${STARS[bs].emoji} ${STARS[bs].name}（${STARS[bs].elem}）</span>
-      ${tensha ? '<span class="bdg bdg-good">☀️ 天赦日</span>' : ''}
-      ${manbai ? '<span class="bdg bdg-good">🌱 一粒万倍日</span>' : ''}
+      <div style="margin-top:12px;display:flex;gap:7px;flex-wrap:wrap;justify-content:center">
+        <span class="bdg bdg-star">${STARS[bs].emoji} ${STARS[bs].name}（${STARS[bs].elem}）</span>
+        ${tensha ? '<span class="bdg bdg-good">☀️ 天赦日</span>' : ''}
+        ${manbai ? '<span class="bdg bdg-good">🌱 一粒万倍日</span>' : ''}
+      </div>
     </div>
     ${prefs.koyomi ? koyomiCard : ''}
     ${prefs.moon  ? moonCard  : ''}
@@ -1064,7 +1069,7 @@ function renderDayDetail() {
       <button class="sheet-x" onclick="closeDayDetail()">✕</button>
     </div>
     ${badges.length ? `<div class="sd-badges">${badges.join('')}</div>` : ''}
-    <div class="sd-sec"><div class="sd-h">今日は何の日</div>
+    <div class="sd-sec"><div class="sd-h">この日は何の日</div>
       <div class="sd-line">${anv.map(a=>esc(a)).join(' ／ ')}</div></div>
     ${scoreHTML}
     <div class="sd-sec">
