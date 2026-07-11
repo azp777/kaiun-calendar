@@ -181,7 +181,7 @@ input[type=date].s-input:focus{border-color:var(--gold)}
 <div class="tabs">
   <button class="tab active" onclick="showTab('today')">✦ 今日</button>
   <button class="tab" onclick="showTab('calendar')">📅 暦</button>
-  <button class="tab" onclick="showTab('compat')">💞 相性</button>
+  <button class="tab" id="tabCompat" onclick="showTab('compat')">💞 相性</button>
   <button class="tab" onclick="showTab('settings')">⚙ 設定</button>
 </div>
 
@@ -718,7 +718,7 @@ function savePartners(list) {
 }
 
 // ─── DISPLAY PREFS (表示カスタマイズ) ────────────────────────────────────────
-const PREF_DEFAULTS = { koyomi:true, moon:true, dir:true, acts:true, avoid:true, color:true };
+const PREF_DEFAULTS = { koyomi:true, moon:true, dir:true, acts:true, avoid:true, color:true, compatTab:false };
 function loadPrefs() {
   const p = Object.assign({}, PREF_DEFAULTS);
   try { const s=localStorage.getItem('kaiun_prefs'); if(s) Object.assign(p, JSON.parse(s)); } catch(e) {}
@@ -729,6 +729,19 @@ function savePrefs(p) {
 }
 function togglePref(key, val) {
   const p = loadPrefs(); p[key] = val; savePrefs(p);
+  if (key === 'compatTab') {
+    applyTabPrefs();
+    // 相性タブをOFFにした瞬間、相性画面を表示中なら今日画面へ退避
+    if (!val && document.getElementById('sc-compat').classList.contains('active')) {
+      showTab('today');
+    }
+  }
+}
+// タブバーの表示/非表示を表示設定に反映（ボタンはDOMに残し display で制御）
+function applyTabPrefs() {
+  const prefs = loadPrefs();
+  const btn = document.getElementById('tabCompat');
+  if (btn) btn.style.display = prefs.compatTab ? '' : 'none';
 }
 
 // ─── COMPATIBILITY LOGIC ─────────────────────────────────────────────────────
@@ -1239,6 +1252,7 @@ function renderSettings() {
       <div class="ctitle">🎛 表示カスタマイズ</div>
       <div style="font-size:.72rem;color:var(--muted);line-height:1.55;margin-bottom:6px">
         「今日」画面に表示するカードを選べます（運気スコアは常に表示）</div>
+      <div style="font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.03em;margin:10px 0 4px">今日画面のカード</div>
       ${[
         ['koyomi','📆 今日の暦'],
         ['moon','🌙 月の満ち欠け'],
@@ -1246,6 +1260,17 @@ function renderSettings() {
         ['acts','✨ 開運アクション'],
         ['avoid','⚠ 避けること'],
         ['color','🎨 ラッキーカラー'],
+      ].map(([k,lbl]) => `
+        <label class="tg-row">
+          <span class="tg-lbl">${lbl}</span>
+          <span class="switch">
+            <input type="checkbox" ${prefs[k]?'checked':''} onchange="togglePref('${k}',this.checked)">
+            <span class="slider"></span>
+          </span>
+        </label>`).join('')}
+      <div style="font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.03em;margin:14px 0 4px">タブ表示</div>
+      ${[
+        ['compatTab','💞 相性タブを表示'],
       ].map(([k,lbl]) => `
         <label class="tg-row">
           <span class="tg-lbl">${lbl}</span>
@@ -1307,6 +1332,7 @@ function calNext() { if (++calMonth > 12) { calMonth=1;  calYear++; } renderCale
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadStorage();
+applyTabPrefs();
 renderHeader();
 renderToday();
 </script>
