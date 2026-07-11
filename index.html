@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0920">
+<title>開運カレンダー</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0d0920;--bg2:#120c28;--card:#180e35;--border:#2a1a55;--gold:#d4a017;--gold-l:#f5c842;--text:#ede8fa;--muted:#7d6aaa;--good:#4ade80;--bad:#f87171;--sp:#a78bfa}
+body{font-family:'Hiragino Kaku Gothic ProN','Meiryo','Yu Gothic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-text-size-adjust:100%}
+header{background:linear-gradient(135deg,#1a0a3e,#0d0920);padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.h-title{font-size:1.05rem;font-weight:800;background:linear-gradient(90deg,var(--gold-l),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.h-sub{font-size:.66rem;color:var(--muted);margin-top:1px}
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:53px;z-index:19}
+.tab{flex:1;padding:10px 3px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:.76rem;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;font-family:inherit}
+.tab.active{color:var(--gold-l);border-bottom-color:var(--gold-l)}
+.screen{display:none;padding:14px 13px 90px}.screen.active{display:block}
+.wrap{max-width:460px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:12px}
+.ctitle{font-size:.68rem;color:var(--muted);letter-spacing:.1em;margin-bottom:10px}
+.score-card{background:linear-gradient(160deg,#1e0a45 0%,#0d1535 100%);border:1px solid #3d2070;text-align:center;padding:22px 14px 18px}
+.sc-date{font-size:.8rem;color:var(--muted);margin-bottom:8px}
+.sc-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:10px}
+.sc-num{font-size:4.5rem;font-weight:800;line-height:1;color:var(--gold-l)}
+.sc-right{text-align:left}
+.sc-level{font-size:1.5rem;font-weight:700;line-height:1}
+.sc-label{font-size:.72rem;color:var(--muted);margin-top:3px}
+.sc-bar-bg{background:rgba(255,255,255,.08);border-radius:99px;height:7px;margin:0 16px}
+.sc-bar{height:100%;border-radius:99px;transition:width 1s ease}
+.badges{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.bdg{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:4px 11px;font-size:.75rem;font-weight:600}
+.bdg-star{background:#1e0f45;border:1px solid #5a3ab0;color:#c4a9ff}
+.bdg-good{background:#052d14;border:1px solid #166534;color:#86efac}
+.moon-row{display:flex;align-items:center;gap:14px}
+.moon-em{font-size:2.2rem}
+.moon-name{font-size:.98rem;font-weight:600}
+.moon-desc{font-size:.74rem;color:var(--muted);margin-top:2px}
+.comp-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;max-width:260px;margin:0 auto}
+.cd{border-radius:9px;padding:7px 3px;text-align:center;border:1.5px solid}
+.cd.good{background:#052d14;border-color:#166534;color:var(--good)}
+.cd.bad{background:#2d0505;border-color:#7f1d1d;color:var(--bad)}
+.cd.neutral{background:#160a30;border-color:var(--border);color:var(--muted)}
+.cd.center{background:#0d0920;border-color:var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.cd-dir{font-size:.65rem;margin-bottom:2px}
+.cd-lbl{font-size:.62rem;font-weight:700}
+.cd-star{font-size:.58rem;opacity:.75;margin-top:2px}
+.act-item{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid #1e1440}
+.act-item:last-child{border-bottom:none}
+.act-ic{font-size:1rem;flex-shrink:0;margin-top:1px}
+.act-txt{font-size:.83rem;line-height:1.55}
+.act-item.sp .act-txt{color:#86efac}
+.avoid-tag{display:inline-block;background:#2d0a0a;border:1px solid #7f1d1d;border-radius:6px;color:#fca5a5;font-size:.76rem;padding:3px 9px;margin-right:6px;margin-bottom:6px}
+.lc-row{display:flex;align-items:center;gap:12px}
+.lc-sw{width:42px;height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.1);flex-shrink:0}
+.lc-name{font-size:1rem;font-weight:600}
+.lc-hint{font-size:.74rem;color:var(--muted);margin-top:2px}
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-btn{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 13px;cursor:pointer;font-size:.88rem;font-family:inherit}
+.cal-lbl{font-size:1rem;font-weight:700;color:var(--gold-l)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-dow{text-align:center;font-size:.65rem;color:var(--muted);padding:3px 0}
+.cal-day{border-radius:7px;padding:5px 2px;min-height:50px;background:var(--card);border:1px solid var(--border);cursor:pointer;position:relative}
+.cal-day.today{border-color:var(--gold);background:#1e1230}
+.cal-day.om{opacity:.3}
+.cal-num{text-align:center;font-size:.76rem;margin-bottom:3px}
+.cal-num.sun{color:#f87171}.cal-num.sat{color:#60a5fa}
+.cal-dots{display:flex;gap:2px;justify-content:center;flex-wrap:wrap}
+.dot{width:5px;height:5px;border-radius:50%}
+.dot.tensha{background:#86efac}.dot.manbai{background:#a3e635}
+.dot.newmoon{background:#60a5fa}.dot.fullmoon{background:var(--gold-l)}
+.cal-score{height:3px;border-radius:2px;margin:2px 3px 0}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.leg{display:flex;align-items:center;gap:4px;font-size:.7rem;color:var(--muted)}
+.s-label{font-size:.78rem;color:var(--muted);margin-bottom:7px}
+input[type=date].s-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 13px;font-size:.95rem;outline:none;font-family:inherit}
+input[type=date].s-input:focus{border-color:var(--gold)}
+.s-btn{width:100%;background:linear-gradient(135deg,#4d2d9e,#2a1a55);border:1px solid #6d4dae;color:#ede8fa;border-radius:10px;padding:12px;font-size:.92rem;font-weight:600;cursor:pointer;margin-top:10px;font-family:inherit;transition:all .15s}
+.s-btn:active{transform:scale(.98)}
+.star-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px;margin-top:11px}
+.star-card h3{font-size:1rem;font-weight:700;margin-bottom:5px}
+.star-card p{font-size:.78rem;color:var(--muted);line-height:1.65}
+.empty{text-align:center;padding:50px 16px;color:var(--muted)}
+.empty .ei{font-size:2.8rem;margin-bottom:10px}
+.empty p{font-size:.85rem;line-height:1.7}
+.empty a{color:var(--gold-l);cursor:pointer}
+/* toggle switch */
+.tg-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1e1440}
+.tg-row:last-child{border-bottom:none}
+.tg-lbl{font-size:.85rem}
+.tg-sub{font-size:.68rem;color:var(--muted);margin-top:1px}
+.switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;margin-left:12px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#241542;border:1px solid var(--border);border-radius:24px;transition:.25s}
+.slider:before{content:'';position:absolute;height:18px;width:18px;left:2px;top:2px;background:#7d6aaa;border-radius:50%;transition:.25s}
+.switch input:checked+.slider{background:linear-gradient(135deg,#4d2d9e,#2a1a55);border-color:var(--gold)}
+.switch input:checked+.slider:before{transform:translateX(20px);background:var(--gold-l)}
+/* compatibility */
+.p-input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;font-size:.9rem;outline:none;font-family:inherit;margin-bottom:9px}
+.p-input:focus{border-color:var(--gold)}
+.p-item{display:flex;align-items:center;gap:11px;background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:11px 13px;margin-top:8px;cursor:pointer;transition:border-color .15s}
+.p-item.sel{border-color:var(--gold)}
+.p-em{font-size:1.5rem;flex-shrink:0}
+.p-name{font-size:.92rem;font-weight:600}
+.p-meta{font-size:.71rem;color:var(--muted);margin-top:1px}
+.p-del{margin-left:auto;background:#2d0a0a;border:1px solid #7f1d1d;color:#fca5a5;border-radius:8px;padding:6px 11px;font-size:.72rem;cursor:pointer;font-family:inherit;flex-shrink:0}
+.cmp-pair{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 14px}
+.cmp-person{text-align:center;flex:1;min-width:0}
+.cmp-em{font-size:2.4rem;line-height:1}
+.cmp-nm{font-size:.82rem;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-star{font-size:.7rem;color:var(--muted);margin-top:1px}
+.cmp-vs{font-size:1.3rem;color:var(--gold);flex-shrink:0}
+.cmp-type{text-align:center;font-size:1.2rem;font-weight:800;color:var(--gold-l);margin-bottom:4px}
+.cmp-score{text-align:center;font-size:1.15rem;letter-spacing:3px;margin-bottom:2px}
+.cmp-tlbl{text-align:center;font-size:.7rem;color:var(--muted);margin-bottom:6px}
+.cmp-block{margin-top:11px}
+.cmp-h{font-size:.76rem;font-weight:700;margin-bottom:4px}
+.cmp-h.g{color:var(--good)}.cmp-h.b{color:var(--bad)}
+.cmp-p{font-size:.8rem;line-height:1.65;color:var(--text)}
+.tori-box{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:12px 13px;margin-top:9px}
+.tori-line{font-size:.8rem;line-height:1.6;margin-bottom:6px}
+.tori-line:last-child{margin-bottom:0}
+.tori-k{color:var(--gold-l);font-weight:600}
+.strat-box{background:#160a30;border:1px solid #4d2d9e;border-radius:11px;padding:12px 13px;margin-top:9px}
+.strat-box .cmp-p{color:#d6c8ff}
+/* 暦カード（六曜・祝日・記念日・予定） */
+.ky-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #1e1440}
+.ky-item:last-child{border-bottom:none}
+.ky-ic{font-size:1.05rem;flex-shrink:0;width:22px;text-align:center;margin-top:1px}
+.ky-c{flex:1;min-width:0}
+.ky-t{font-size:.9rem;font-weight:600}
+.ky-d{font-size:.73rem;color:var(--muted);margin-top:2px;line-height:1.55}
+.rk-taian{color:var(--gold-l)}
+.rk-butsu{color:#a88}
+.rk-hol{color:#f87171}
+/* カレンダーセル追加要素 */
+.cal-day{min-height:60px}
+.cal-num.hol{color:#f87171}
+.cal-rk{text-align:center;font-size:.56rem;line-height:1;margin:1px 0 2px;color:var(--muted)}
+.cal-rk.taian{color:var(--gold-l)}
+.cal-rk.butsu{color:#9e7b7b}
+.cal-hol{text-align:center;font-size:.5rem;color:#f87171;line-height:1.1;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.cal-pin{position:absolute;top:2px;right:3px;font-size:.52rem;line-height:1}
+/* 日詳細ボトムシート */
+.sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet-ov.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--bg2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;max-width:460px;margin:0 auto;max-height:84vh;overflow-y:auto;padding:12px 16px 32px;transform:translateY(100%);transition:transform .25s}
+.sheet-ov.show .sheet{transform:translateY(0)}
+.sheet-grip{width:38px;height:4px;border-radius:2px;background:var(--border);margin:2px auto 12px}
+.sheet-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:10px}
+.sheet-date{font-size:1.15rem;font-weight:700;color:var(--gold-l)}
+.sheet-sub{font-size:.75rem;color:var(--muted);margin-top:3px;line-height:1.5}
+.sheet-x{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;font-size:1rem;cursor:pointer;flex-shrink:0;font-family:inherit}
+.sd-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.sd-sec{margin-top:13px}
+.sd-h{font-size:.68rem;color:var(--muted);letter-spacing:.08em;margin-bottom:6px}
+.sd-line{font-size:.83rem;line-height:1.65}
+.sd-score{display:flex;align-items:center;gap:10px}
+.sd-scnum{font-size:1.9rem;font-weight:800;line-height:1}
+.ev-item{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 11px;margin-bottom:6px}
+.ev-tx{font-size:.85rem;flex:1;min-width:0;word-break:break-word;line-height:1.45}
+.ev-del{background:#2d0a0a;border:1px solid #7f1d1d;color:#fca5a5;border-radius:7px;padding:4px 9px;font-size:.7rem;cursor:pointer;font-family:inherit;flex-shrink:0}
+.ev-form{display:flex;gap:7px;margin-top:8px}
+.ev-in{flex:1;min-width:0;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 11px;font-size:.85rem;outline:none;font-family:inherit}
+.ev-in:focus{border-color:var(--gold)}
+.ev-add{background:linear-gradient(135deg,#4d2d9e,#2a1a55);border:1px solid #6d4dae;color:#ede8fa;border-radius:9px;padding:0 15px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0}
+.ev-empty{font-size:.78rem;color:var(--muted);padding:2px 0 4px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="h-title">✦ 開運カレンダー</div>
+    <div class="h-sub" id="hDate"></div>
+  </div>
+  <span id="hMoon" style="font-size:1.5rem"></span>
+</header>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('today')">✦ 今日</button>
+  <button class="tab" onclick="showTab('calendar')">📅 暦</button>
+  <button class="tab" onclick="showTab('compat')">💞 相性</button>
+  <button class="tab" onclick="showTab('settings')">⚙ 設定</button>
+</div>
+
+<div id="sc-today" class="screen active"><div class="wrap" id="todayWrap"></div></div>
+<div id="sc-calendar" class="screen"><div class="wrap">
+  <div class="cal-hdr">
+    <button class="cal-btn" onclick="calPrev()">‹</button>
+    <span class="cal-lbl" id="calLbl"></span>
+    <button class="cal-btn" onclick="calNext()">›</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="legend">
+    <div class="leg"><div class="dot tensha"></div>天赦日</div>
+    <div class="leg"><div class="dot manbai"></div>一粒万倍日</div>
+    <div class="leg"><div class="dot newmoon"></div>新月</div>
+    <div class="leg"><div class="dot fullmoon"></div>満月</div>
+  </div>
+</div></div>
+<div id="sc-compat" class="screen"><div class="wrap" id="compatWrap"></div></div>
+<div id="sc-settings" class="screen"><div class="wrap" id="settingsWrap"></div></div>
+
+<div class="sheet-ov" id="daySheetOv" onclick="if(event.target===this)closeDayDetail()">
+  <div class="sheet" id="daySheet"></div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const STARS = [null,
+  {name:'一白水星',elem:'水',emoji:'💧',color:'#60a5fa',dirIdx:0,
+   lucky:['白','黒','紺'],
+   acts:['水を飲む・入浴してリフレッシュ','日記や記録をつける','信頼できる人と対話する'],
+   avoid:['大きな契約・重要な決断','孤立した行動'],
+   torisetsu:{likes:'悩みにそっと寄り添い、本音をじっくり聞いてもらうこと',ng:'感情を無視した強引な決めつけや、打ち明けた秘密を軽々しく他人に漏らすこと',approach:'一対一で時間をかけ、粘り強く信頼を積み重ねて本音を引き出す'}},
+  {name:'二黒土星',elem:'土',emoji:'🌾',color:'#ca8a04',dirIdx:5,
+   lucky:['黄','茶','ベージュ'],
+   acts:['身の回りを整理・掃除する','感謝の気持ちを言葉で伝える','地道な作業を着実に進める'],
+   avoid:['軽率な発言・行動','焦って新しいことを始める'],
+   torisetsu:{likes:'地道な努力や陰ながらの支えを、きちんと認めて感謝すること',ng:'急かす・雑な指示を出す・成果だけを横取りすること',approach:'手順を丁寧に示し、時間の余裕を持たせて安心して任せる'}},
+  {name:'三碧木星',elem:'木',emoji:'🌿',color:'#4ade80',dirIdx:2,
+   lucky:['緑','青','ターコイズ'],
+   acts:['新しいことをスタートする','声に出す・宣言する・発信する','外出・散歩・移動する'],
+   avoid:['慎重さが必要な作業','同じことを繰り返すだけ'],
+   torisetsu:{likes:'新しいアイデアや発言に前向きに反応し、スピード感を共有すること',ng:'話をさえぎる・古いやり方を押し付ける・グズグズと引き延ばすこと',approach:'テンポよく会話し、新しい挑戦の場や役割を積極的に与える'}},
+  {name:'四緑木星',elem:'木',emoji:'🍃',color:'#86efac',dirIdx:3,
+   lucky:['緑','オレンジ','白'],
+   acts:['人脈を活かして交流する','旅行・新しい場所へ移動する','信頼関係を深める行動をとる'],
+   avoid:['一人で抱え込む','優柔不断な態度'],
+   torisetsu:{likes:'人当たりの良さや調整力を頼りにし、丁寧に相談を持ちかけること',ng:'強引に結論を迫る・約束や礼儀を軽んじる・信用を裏切ること',approach:'選択肢を整理して示し、相手の顔を立てながら決断をそっと後押しする'}},
+  {name:'五黄土星',elem:'土',emoji:'⭐',color:'#eab308',dirIdx:-1,
+   lucky:['黄','金','紫'],
+   acts:['大きな目標を設定する','リーダーシップを発揮する','変化を積極的に受け入れる'],
+   avoid:['現状維持だけを望む','傲慢な態度'],
+   torisetsu:{likes:'ボスとして立て、頼りにし、その存在感を認めること',ng:'見下す・上から指図する・プライドや面子を傷つけること',approach:'主導権は相手に持たせつつ、こちらの意向をさりげなく織り込んで動かす'}},
+  {name:'六白金星',elem:'金',emoji:'👑',color:'#e5e7eb',dirIdx:7,
+   lucky:['白','金','銀'],
+   acts:['計画を立てる・見直す','目上の人や権威ある人に会う','規律ある行動を徹底する'],
+   avoid:['軽率な言動','権威を振りかざす行動'],
+   torisetsu:{likes:'筋道立てた説明と、目上として敬意を払われること',ng:'面子を潰す・ルーズな態度をとる・場当たり的で無計画な対応',approach:'結論から論理的に伝え、上下の礼をわきまえて誠実に接する'}},
+  {name:'七赤金星',elem:'金',emoji:'🎭',color:'#f87171',dirIdx:6,
+   lucky:['赤','ピンク','金'],
+   acts:['楽しいことをする・美食を楽しむ','友人・仲間と積極的に交流する','美的センスを活かした行動をとる'],
+   avoid:['節約一辺倒の生活','孤立した作業'],
+   torisetsu:{likes:'楽しい雰囲気を共有し、褒めて気分よくさせること',ng:'説教くさい態度・ケチな対応・場を白けさせること',approach:'ユーモアを交え、飲食や娯楽の場でリラックスして打ち解ける'}},
+  {name:'八白土星',elem:'土',emoji:'🏔',color:'#d97706',dirIdx:1,
+   lucky:['白','黄','土色'],
+   acts:['財産・蓄財に関する行動をとる','大きな変革・決断をする','神社・山など変化点に参拝する'],
+   avoid:['変化を恐れて何もしない','お金の無駄遣い'],
+   torisetsu:{likes:'誠実さと粘り強さを評価し、じっくり時間をかけて関係を築くこと',ng:'コロコロ方針を変える・馴れ馴れしく懐へ踏み込むこと',approach:'一貫した態度で接し、変化を求めるときは理由を添えて段階的に示す'}},
+  {name:'九紫火星',elem:'火',emoji:'🔮',color:'#e879f9',dirIdx:4,
+   lucky:['紫','赤','ピンク'],
+   acts:['直感に従って行動する','SNS発信・目立つ行動をとる','美的なことや文化的な活動に投資する'],
+   avoid:['感情的な言動','過度な自己主張'],
+   torisetsu:{likes:'才能やセンスを褒め、注目・評価され主役として扱われること',ng:'人前で恥をかかせる・地味な脇役扱いをする・才能を否定すること',approach:'相手の見栄えと功績を立て、感情の起伏に配慮しながら接する'}},
+];
+
+const DIRS=['北','北東','東','東南','南','南西','西','北西'];
+// Standard board (5 at center): direction index [N,NE,E,SE,S,SW,W,NW] → star
+const DIR_TO_STAR_STD=[1,8,3,4,9,2,7,6];
+
+const GENERATES={水:'木',木:'火',火:'土',土:'金',金:'水'};
+// 五行相剋 (剋する側→剋される側): 水剋火,火剋金,金剋木,木剋土,土剋水
+const CONTROLS={水:'火',火:'金',金:'木',木:'土',土:'水'};
+// elem を生み出す側の五行を返す（例: 金→土）
+function generatorOf(elem){ for(const k in GENERATES) if(GENERATES[k]===elem) return k; return null; }
+
+const LUCKY_CSS={
+  '白':'#f0f0f0','黒':'#2d2d2d','紺':'#1e3a5f',
+  '黄':'#eab308','茶':'#92400e','ベージュ':'#d4b896',
+  '緑':'#16a34a','青':'#2563eb','ターコイズ':'#0d9488',
+  'オレンジ':'#ea580c','金':'#d4a017','銀':'#9ca3af',
+  '赤':'#dc2626','ピンク':'#ec4899','紫':'#9333ea','土色':'#a3785a',
+};
+
+const KANSHI_STEM=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const KANSHI_BR=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const JAP_DOW=['日','月','火','水','木','金','土'];
+
+// ─── CORE CALCULATIONS ───────────────────────────────────────────────────────
+
+// 年盤中宮 (reference: 2024 = 二黒土星 = 2)
+function getYearStar(year) {
+  const off = ((year - 2024) % 9 + 9) % 9;
+  return ((1 - off + 90) % 9) + 1;
+}
+
+// 本命星 from birth date (節分 Feb4 adjustment)
+function getBirthStar(y, m, d) {
+  const eff = (m === 1 || (m === 2 && d < 4)) ? y - 1 : y;
+  return getYearStar(eff);
+}
+
+// Returns {branch:0-11 (子=0..亥=11), effYear for year star}
+function getMonthInfo(date) {
+  const y = date.getFullYear(), m = date.getMonth()+1, d = date.getDate();
+  // Approximate 節気 cutoff day within each month (1-indexed months)
+  const cuts = [6,4,6,5,6,6,7,7,8,8,7,7];
+  const cut = cuts[m-1];
+  let branch, effYear = y;
+
+  if (m === 1) {
+    branch = d < cut ? 11 : 0;  // Dec's 亥 carries over, or new 子月
+    effYear = y - 1;             // still pre-立春
+  } else if (m === 2) {
+    if (d < cut) { branch = 0; effYear = y - 1; }  // 子月, prev year
+    else branch = 1;                                 // 寅月 (branch index 2, but mapped below)
+  } else {
+    // m=2 → branch 1(丑 pre-立春 handled above), m=3 → 2(寅) etc.
+    // After 節気: m=2→1(丑... wait, 立春→寅)
+    // Let me re-map: Feb4 starts 寅月(2), Mar6→卯(3), Apr5→辰(4)...
+    const afterBranch = m;     // Feb=2=寅, Mar=3=卯, Apr=4=辰... Dec=12→0(子)
+    const beforeBranch = m - 1;
+    branch = d < cut ? (beforeBranch <= 0 ? 11 : beforeBranch) : (afterBranch > 11 ? 0 : afterBranch);
+  }
+  return { branch, effYear };
+}
+
+// 月盤中宮
+function getMonthStar(date) {
+  const { branch, effYear } = getMonthInfo(date);
+  const ys = getYearStar(effYear);
+  // 寅月(branch=2) base star per year star: [8,2,5,8,2,5,8,2,5]
+  const bases = [8,2,5,8,2,5,8,2,5];
+  const base = bases[ys - 1];
+  // offset from 寅月: 寅=2→0, 卯=3→1, ..., 丑=1→11
+  const off = (branch - 2 + 12) % 12;
+  return ((base - off - 1 + 90) % 9) + 1;
+}
+
+// 日の干支 index 0-59 (甲子=0 ... 癸亥=59)
+// Reference: Jan 1, 2000 = 庚辰 = index 16
+function getDayKanshi(date) {
+  const ref = new Date(2000, 0, 1);
+  const days = Math.round((date - ref) / 86400000);
+  return ((days + 16) % 60 + 60) % 60;
+}
+
+// 日盤中宮 (approximate — day star starts at month star on 節気 day, decrements daily)
+function getDayStar(date) {
+  const ms = getMonthStar(date);
+  const m = date.getMonth()+1, d = date.getDate();
+  const cuts = [6,4,6,5,6,6,7,7,8,8,7,7];
+  const cut = cuts[m-1];
+  let daysIn;
+  if (d >= cut) {
+    daysIn = d - cut;
+  } else {
+    const pm = m === 1 ? 12 : m - 1;
+    const prevCut = cuts[pm-1];
+    const daysInPrev = new Date(date.getFullYear(), m-1, 0).getDate();
+    daysIn = (daysInPrev - prevCut) + d;
+  }
+  return ((ms - daysIn - 1 + 90) % 9) + 1;
+}
+
+// Moon phase (0=new moon, ~14.77=full moon, cycle=29.53 days)
+function getMoonPhase(date) {
+  const y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
+  const a=Math.floor((14-m)/12), yy=y+4800-a, mm=m+12*a-3;
+  const jd=d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045;
+  const ds = jd - 2451549.275; // ref new moon Jan 6, 2000
+  const cyc = 29.53058867;
+  return ((ds % cyc) + cyc) % cyc;
+}
+
+function moonInfo(phase) {
+  const f = phase / 29.53058867;
+  if (f < 0.03 || f > 0.97) return { name:'新月', emoji:'🌑', boost:1.4, desc:'新しいスタートの日' };
+  if (f < 0.22)              return { name:'三日月', emoji:'🌒', boost:1.1, desc:'エネルギーが高まる' };
+  if (f < 0.28)              return { name:'上弦の月', emoji:'🌓', boost:1.1, desc:'行動力アップの時' };
+  if (f < 0.47)              return { name:'十三夜月', emoji:'🌔', boost:1.2, desc:'実現に向けて前進' };
+  if (f < 0.53)              return { name:'満月', emoji:'🌕', boost:1.4, desc:'願いが実る・感謝の日' };
+  if (f < 0.72)              return { name:'居待月', emoji:'🌖', boost:1.0, desc:'振り返りと整理の時' };
+  if (f < 0.78)              return { name:'下弦の月', emoji:'🌗', boost:0.95, desc:'手放し・デトックス' };
+  return                            { name:'有明月', emoji:'🌘', boost:0.9,  desc:'準備・浄化の時期' };
+}
+
+// 一粒万倍日: day branch must be 子(0)丑(1)午(6)未(7), stem determined by month branch
+function isIchiryuManbaibi(date) {
+  const ks = getDayKanshi(date);
+  const stem = ks % 10, br = ks % 12;
+  if (![0,1,6,7].includes(br)) return false;
+  const { branch: mb } = getMonthInfo(date);
+  const startStem = (mb * 2 + 8) % 10;
+  return stem === startStem || stem === (startStem + 1) % 10;
+}
+
+// 天赦日: 春=戊寅(14) 夏=甲午(30) 秋=戊申(44) 冬=甲子(0)
+function getTenshaSeason(date) {
+  const m=date.getMonth()+1, d=date.getDate();
+  if ((m===2&&d>=4)||m===3||m===4||(m===5&&d<=5))   return 0; // 春
+  if ((m===5&&d>=6)||m===6||m===7||(m===8&&d<=6))   return 1; // 夏
+  if ((m===8&&d>=7)||m===9||m===10||(m===11&&d<=6)) return 2; // 秋
+  return 3;                                                     // 冬
+}
+function isTenshanichi(date) {
+  return getDayKanshi(date) === [14,30,44,0][getTenshaSeason(date)];
+}
+
+// Board: for a given center star, what star sits at each direction?
+function getBoard(centerStar) {
+  return DIR_TO_STAR_STD.map(base => ((base + centerStar - 6 + 90) % 9) + 1);
+}
+
+function gogyoRel(birthStar, otherStar) {
+  const be = STARS[birthStar].elem, oe = STARS[otherStar].elem;
+  if (be === oe) return 'same';
+  if (GENERATES[oe] === be || GENERATES[be] === oe) return 'good';
+  return 'bad';
+}
+
+function getLuckyDirs(birthStar, centerStar) {
+  const board = getBoard(centerStar);
+  return DIRS.map((dir, i) => {
+    const s = board[i];
+    let type, lbl;
+    if (centerStar !== 5 && s === 5)               { type='bad';     lbl='五黄殺'; }
+    else if (centerStar !== 5 && board[(i+4)%8]===5) { type='bad';   lbl='暗剣殺'; }
+    else if (s === birthStar)                        { type='good';   lbl='本命位'; }
+    else {
+      const r = gogyoRel(birthStar, s);
+      type = r==='good' ? 'good' : r==='bad' ? 'bad' : 'neutral';
+      lbl  = type==='good' ? '吉' : type==='bad' ? '凶' : '';
+    }
+    return { dir, i, star: s, type, lbl };
+  });
+}
+
+function getScore(date, birthStar) {
+  const ds = getDayStar(date), ms = getMonthStar(date);
+  let sc = 50;
+  const dr = gogyoRel(birthStar, ds);
+  if (ds === birthStar) sc += 25;
+  else if (dr === 'good') sc += 18;
+  else if (dr === 'bad')  sc -= 12;
+  const mr = gogyoRel(birthStar, ms);
+  if (mr === 'good') sc += 10; else if (mr === 'bad') sc -= 8;
+  if (isTenshanichi(date))    sc += 20;
+  if (isIchiryuManbaibi(date)) sc += 10;
+  sc = Math.floor(sc * moonInfo(getMoonPhase(date)).boost);
+  return Math.min(100, Math.max(8, sc));
+}
+
+function scoreLevel(sc) {
+  if (sc >= 85) return { lv:'大吉', color:'#f5c842', bar:'#d4a017' };
+  if (sc >= 68) return { lv:'中吉', color:'#86efac', bar:'#22c55e' };
+  if (sc >= 52) return { lv:'小吉', color:'#93c5fd', bar:'#3b82f6' };
+  if (sc >= 38) return { lv:'末吉', color:'#cbd5e1', bar:'#64748b' };
+  return              { lv:'凶',   color:'#f87171', bar:'#ef4444' };
+}
+
+// ─── 旧暦・六曜（天保暦：qreki方式の再実装） ──────────────────────────────────
+// 太陽・月の黄経を摂動項付き近似式で求め、朔（新月）と中気から旧暦月日を導出する。
+const RK_K = Math.PI / 180.0;
+function longitudeSun(t) {
+  const c = a => Math.cos(RK_K * (a % 360.0));
+  let th = 0;
+  th += 0.0004 * c(31557.0*t+161.0);  th += 0.0004 * c(29930.0*t+48.0);
+  th += 0.0005 * c(2281.0*t+221.0);   th += 0.0005 * c(155.0*t+118.0);
+  th += 0.0006 * c(33718.0*t+316.0);  th += 0.0007 * c(9038.0*t+64.0);
+  th += 0.0007 * c(3035.0*t+110.0);   th += 0.0007 * c(65929.0*t+45.0);
+  th += 0.0013 * c(22519.0*t+352.0);  th += 0.0015 * c(45038.0*t+254.0);
+  th += 0.0018 * c(445267.0*t+208.0); th += 0.0018 * c(19.0*t+159.0);
+  th += 0.0020 * c(32964.0*t+158.0);  th += 0.0200 * c(71998.1*t+265.1);
+  th -= 0.0048 * t * c(35999.05*t+267.52);
+  th += 1.9147 * c(35999.05*t+267.52);
+  let ang = (36000.7695*t) % 360.0; ang = (ang + 280.4659) % 360.0;
+  return ((th + ang) % 360.0 + 360.0) % 360.0;
+}
+function longitudeMoon(t) {
+  const c = a => Math.cos(RK_K * (a % 360.0));
+  let th = 0;
+  th += 0.0003*c(2322131.0*t+191.0); th += 0.0003*c(4067.0*t+70.0);
+  th += 0.0003*c(549197.0*t+220.0);  th += 0.0003*c(1808933.0*t+58.0);
+  th += 0.0003*c(349472.0*t+337.0);  th += 0.0003*c(381404.0*t+354.0);
+  th += 0.0003*c(958465.0*t+340.0);  th += 0.0004*c(12006.0*t+187.0);
+  th += 0.0004*c(39871.0*t+223.0);   th += 0.0005*c(509131.0*t+242.0);
+  th += 0.0005*c(1745069.0*t+24.0);  th += 0.0005*c(1908795.0*t+90.0);
+  th += 0.0006*c(2258267.0*t+156.0); th += 0.0006*c(111869.0*t+38.0);
+  th += 0.0007*c(27864.0*t+127.0);   th += 0.0007*c(485333.0*t+186.0);
+  th += 0.0007*c(405201.0*t+50.0);   th += 0.0007*c(790672.0*t+114.0);
+  th += 0.0008*c(1403732.0*t+98.0);  th += 0.0009*c(858602.0*t+129.0);
+  th += 0.0011*c(1920802.0*t+186.0); th += 0.0012*c(1267871.0*t+249.0);
+  th += 0.0016*c(1856938.0*t+152.0); th += 0.0018*c(401329.0*t+274.0);
+  th += 0.0021*c(341337.0*t+16.0);   th += 0.0021*c(71998.0*t+85.0);
+  th += 0.0021*c(990397.0*t+357.0);  th += 0.0022*c(818536.0*t+151.0);
+  th += 0.0023*c(922466.0*t+163.0);  th += 0.0024*c(99863.0*t+122.0);
+  th += 0.0026*c(1379739.0*t+17.0);  th += 0.0027*c(918399.0*t+182.0);
+  th += 0.0028*c(1934.0*t+145.0);    th += 0.0037*c(541062.0*t+259.0);
+  th += 0.0038*c(1781068.0*t+21.0);  th += 0.0040*c(133.0*t+29.0);
+  th += 0.0040*c(1844932.0*t+56.0);  th += 0.0040*c(1331734.0*t+283.0);
+  th += 0.0050*c(481266.0*t+205.0);  th += 0.0052*c(31932.0*t+107.0);
+  th += 0.0068*c(926533.0*t+323.0);  th += 0.0079*c(449334.0*t+188.0);
+  th += 0.0085*c(826671.0*t+111.0);  th += 0.0100*c(1431597.0*t+315.0);
+  th += 0.0107*c(1303870.0*t+246.0); th += 0.0110*c(489205.0*t+142.0);
+  th += 0.0125*c(1443603.0*t+52.0);  th += 0.0154*c(75870.0*t+41.0);
+  th += 0.0304*c(513197.9*t+222.5);  th += 0.0347*c(445267.1*t+27.9);
+  th += 0.0409*c(441199.8*t+47.4);   th += 0.0458*c(854535.2*t+148.2);
+  th += 0.0533*c(1367733.1*t+280.7); th += 0.0571*c(377336.3*t+13.2);
+  th += 0.0588*c(63863.5*t+124.2);   th += 0.1144*c(966404.0*t+276.5);
+  th += 0.1851*c(35999.05*t+87.53);  th += 0.2136*c(954397.74*t+179.93);
+  th += 0.6583*c(890534.22*t+145.7); th += 1.2740*c(413335.35*t+10.74);
+  th += 6.2888*c(477198.868*t+44.963);
+  let ang = (481267.8809*t) % 360.0; ang = (ang + 218.3162) % 360.0;
+  return ((th + ang) % 360.0 + 360.0) % 360.0;
+}
+function rkDeltaT(y){ const u=y-2000; return 62.92 + 0.32217*u + 0.005589*u*u; } // ΔT秒（2005-2050近似）
+function rkTof(jdUT, y){ return (jdUT + rkDeltaT(y)/86400.0 - 2451545.0) / 36525.0; }
+function rkJdn(y,m,d){ const a=Math.floor((14-m)/12), yy=y+4800-a, mm=m+12*a-3;
+  return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045; }
+function rkN360(x){ return ((x%360)+360)%360; }
+function rkN180(x){ const v=rkN360(x); return v>180 ? v-360 : v; }
+function rkLastNewMoon(jdUT, y){ // JST基準、jdUT以前の最も近い朔
+  const diff=rkN360(longitudeMoon(rkTof(jdUT,y))-longitudeSun(rkTof(jdUT,y)));
+  let est=jdUT-diff/12.1907;
+  for(let i=0;i<12;i++){ const d=rkN180(longitudeMoon(rkTof(est,y))-longitudeSun(rkTof(est,y))); est-=d/12.1907; }
+  return est;
+}
+function rkNextNewMoon(nmUT, y){ let est=nmUT+29.53059;
+  for(let i=0;i<12;i++){ const d=rkN180(longitudeMoon(rkTof(est,y))-longitudeSun(rkTof(est,y))); est-=d/12.1907; }
+  return est;
+}
+function rkSolveSun(target, guessUT, y){ let jd=guessUT;
+  for(let i=0;i<12;i++){ const d=rkN180(longitudeSun(rkTof(jd,y))-target); jd-=d/0.9856; }
+  return jd;
+}
+function rkSectorToMonth(lng){ const s=Math.floor(rkN360(lng)/30); const m=(s+2)%12; return m===0?12:m; }
+const _kyurekiCache = {};
+function getKyureki(y, m, d) { // {month, day, leap}（日付キーでメモ化）
+  const key = y*10000 + m*100 + d;
+  if (_kyurekiCache[key]) return _kyurekiCache[key];
+  const targetJdn = rkJdn(y,m,d);
+  const endUT = targetJdn + 0.125 - 1e-6;          // 対象日 24:00 JST（当日午後の朔も1日に含める）
+  const nm0 = rkLastNewMoon(endUT, y);
+  const nm1 = rkNextNewMoon(nm0, y);
+  const nm0Jdn = Math.floor(nm0 + 0.875);          // 朔の暦日（JST）
+  const nm1Jdn = Math.floor(nm1 + 0.875);
+  const day = targetJdn - nm0Jdn + 1;
+  const L0 = longitudeSun(rkTof(nm0, y));
+  const prevLng = Math.floor(L0/30)*30, nextLng = prevLng + 30;
+  const prevJd = rkSolveSun(rkN360(prevLng), nm0 - rkN360(L0-prevLng)/0.9856, y);
+  const nextJd = rkSolveSun(rkN360(nextLng), nm0 + rkN360(nextLng-L0)/0.9856, y);
+  const prevChu = Math.floor(prevJd+0.875), nextChu = Math.floor(nextJd+0.875);
+  let month, leap = true;
+  if (prevChu >= nm0Jdn && prevChu < nm1Jdn)      { month = rkSectorToMonth(prevLng); leap = false; }
+  else if (nextChu >= nm0Jdn && nextChu < nm1Jdn) { month = rkSectorToMonth(nextLng); leap = false; }
+  else                                            { month = rkSectorToMonth(prevLng); leap = true; }
+  const res = { month, day, leap };
+  _kyurekiCache[key] = res;
+  return res;
+}
+const ROKUYO = ['大安','赤口','先勝','友引','先負','仏滅'];
+function getRokuyo(y, m, d) { const k = getKyureki(y,m,d); return { idx:(k.month + k.day) % 6, k }; }
+function rokuyoCalCls(idx){ return idx===0?'taian':idx===5?'butsu':''; }
+function rokuyoTxtCls(idx){ return idx===0?'rk-taian':idx===5?'rk-butsu':''; }
+
+// ─── 日本の祝日（内閣府ルールをアルゴリズム化） ───────────────────────────────
+function hlNthMonday(y,m,nth){ const first=new Date(y,m-1,1).getDay(); return 1+((8-first)%7)+(nth-1)*7; }
+function hlSpring(y){ return Math.floor(20.8431 + 0.242194*(y-1980) - Math.floor((y-1980)/4)); }
+function hlAutumn(y){ return Math.floor(23.2488 + 0.242194*(y-1980) - Math.floor((y-1980)/4)); }
+const _holCache = {};
+function holidaysOfYear(y){
+  if (_holCache[y]) return _holCache[y];
+  const h = {}; const set=(m,d,n)=>{ h[m+'-'+d]=n; };
+  set(1,1,'元日'); set(2,11,'建国記念の日'); set(2,23,'天皇誕生日'); set(4,29,'昭和の日');
+  set(5,3,'憲法記念日'); set(5,4,'みどりの日'); set(5,5,'こどもの日'); set(8,11,'山の日');
+  set(11,3,'文化の日'); set(11,23,'勤労感謝の日');
+  set(1,hlNthMonday(y,1,2),'成人の日'); set(7,hlNthMonday(y,7,3),'海の日');
+  set(9,hlNthMonday(y,9,3),'敬老の日'); set(10,hlNthMonday(y,10,2),'スポーツの日');
+  set(3,hlSpring(y),'春分の日'); set(9,hlAutumn(y),'秋分の日');
+  const isH=(mm,dd)=>!!h[mm+'-'+dd];
+  // 国民の休日：祝日に挟まれた平日（日曜以外）
+  const extra=[];
+  for(let m=1;m<=12;m++){ const dim=new Date(y,m,0).getDate();
+    for(let d=1;d<=dim;d++){ const dt=new Date(y,m-1,d);
+      if(isH(m,d)||dt.getDay()===0) continue;
+      const pv=new Date(y,m-1,d-1), nx=new Date(y,m-1,d+1);
+      if(isH(pv.getMonth()+1,pv.getDate())&&isH(nx.getMonth()+1,nx.getDate())) extra.push([m,d]);
+    }}
+  for(const [m,d] of extra) set(m,d,'国民の休日');
+  // 振替休日：日曜が祝日→次の平日
+  const subs=[];
+  for(const k of Object.keys(h)){ const [m,d]=k.split('-').map(Number);
+    if(new Date(y,m-1,d).getDay()!==0) continue;
+    let cur=new Date(y,m-1,d+1);
+    while(isH(cur.getMonth()+1,cur.getDate())) cur.setDate(cur.getDate()+1);
+    subs.push([cur.getMonth()+1,cur.getDate()]);
+  }
+  for(const [m,d] of subs) if(!h[m+'-'+d]) set(m,d,'振替休日');
+  _holCache[y]=h; return h;
+}
+function holidayName(y,m,d){ return holidaysOfYear(y)[m+'-'+d] || null; }
+
+// ─── 今日は何の日（記念日データテーブル） ────────────────────────────────────
+function pad2(n){ return String(n).padStart(2,'0'); }
+const ANNIV = {
+ '01-01':['元日','初詣'],'01-02':['初夢の日'],'01-03':['瞳の日'],'01-04':['石の日'],'01-05':['いちごの日'],
+ '01-06':['ケーキの日'],'01-07':['七草の日'],'01-08':['平成スタートの日'],'01-09':['とんちの日'],'01-10':['110番の日'],
+ '01-11':['鏡開き'],'01-12':['スキーの日'],'01-13':['ピース記念日'],'01-14':['愛と希望と勇気の日'],'01-15':['小正月'],
+ '01-16':['藪入り'],'01-17':['防災とボランティアの日'],'01-18':['都バスの日'],'01-19':['家庭消火器点検の日'],'01-20':['二十日正月'],
+ '01-21':['料理番組の日'],'01-22':['カレーの日'],'01-23':['電子メールの日'],'01-24':['郵便制度施行記念日'],'01-25':['ホットケーキの日'],
+ '01-26':['文化財防火デー'],'01-27':['国旗制定記念日'],'01-28':['逸話の日'],'01-29':['昭和基地開設記念日'],'01-30':['3分間電話の日'],
+ '01-31':['愛妻の日'],
+ '02-01':['テレビ放送記念日'],'02-02':['世界湿地デー'],'02-03':['節分','大豆の日'],'02-04':['立春','銀閣寺の日'],'02-05':['プロ野球の日'],
+ '02-06':['海苔の日'],'02-07':['北方領土の日'],'02-08':['針供養'],'02-09':['フグの日'],'02-10':['ニットの日'],
+ '02-11':['建国記念の日','万歳三唱の日'],'02-12':['ペニシリンの日'],'02-13':['苗字制定記念日'],'02-14':['バレンタインデー'],'02-15':['春一番名付けの日'],
+ '02-16':['天気図記念日'],'02-17':['天使の囁きの日'],'02-18':['エアメールの日'],'02-19':['プロレスの日'],'02-20':['歌舞伎の日'],
+ '02-21':['日刊新聞創刊の日'],'02-22':['猫の日'],'02-23':['天皇誕生日','富士山の日'],'02-24':['月光仮面登場の日'],'02-25':['夕刊フジ創刊の日'],
+ '02-26':['血液銀行開業記念日'],'02-27':['ポケモンの日'],'02-28':['ビスケットの日'],'02-29':['にんにくの日'],
+ '03-01':['マヨネーズの日'],'03-02':['遠山の金さんの日'],'03-03':['ひな祭り','桃の節句'],'03-04':['ミシンの日'],'03-05':['サンゴの日'],
+ '03-06':['スポーツ新聞の日'],'03-07':['消防記念日'],'03-08':['ミモザの日','国際女性デー'],'03-09':['ありがとうの日'],'03-10':['砂糖の日','東京都平和の日'],
+ '03-11':['パンダ発見の日'],'03-12':['お水取り'],'03-13':['サンドイッチデー'],'03-14':['ホワイトデー'],'03-15':['靴の日'],
+ '03-16':['国立公園指定記念日'],'03-17':['聖パトリックの日'],'03-18':['点字ブロックの日'],'03-19':['カメラ発明記念日'],'03-20':['上野動物園開園記念日'],
+ '03-21':['ランドセルの日'],'03-22':['世界水の日','放送記念日'],'03-23':['世界気象デー'],'03-24':['世界結核デー'],'03-25':['電気記念日'],
+ '03-26':['カチューシャの歌の日'],'03-27':['さくらの日'],'03-28':['シルクロードの日'],'03-29':['マリモの日'],'03-30':['信長の野望の日'],
+ '03-31':['オーケストラの日'],
+ '04-01':['エイプリルフール'],'04-02':['国際子どもの本の日'],'04-03':['シーサーの日'],'04-04':['あんぱんの日'],'04-05':['デビューの日'],
+ '04-06':['城の日'],'04-07':['世界保健デー'],'04-08':['花まつり'],'04-09':['大仏の日'],'04-10':['駅弁の日'],
+ '04-11':['ガッツポーズの日'],'04-12':['パンの記念日'],'04-13':['喫茶店の日'],'04-14':['オレンジデー'],'04-15':['ヘリコプターの日'],
+ '04-16':['ボーイズビーアンビシャスデー'],'04-17':['なすび記念日'],'04-18':['発明の日'],'04-19':['地図の日'],'04-20':['郵政記念日'],
+ '04-21':['民放の日'],'04-22':['アースデー'],'04-23':['サン・ジョルディの日'],'04-24':['植物学の日'],'04-25':['世界ペンギンの日'],
+ '04-26':['よい風呂の日'],'04-27':['哲学の日'],'04-28':['象の日'],'04-29':['昭和の日','羊肉の日'],'04-30':['図書館記念日'],
+ '05-01':['メーデー'],'05-02':['緑茶の日'],'05-03':['憲法記念日'],'05-04':['みどりの日'],'05-05':['こどもの日','端午の節句'],
+ '05-06':['コロッケの日'],'05-07':['コナモンの日'],'05-08':['世界赤十字デー'],'05-09':['アイスクリームの日'],'05-10':['愛鳥の日'],
+ '05-11':['長良川鵜飼開き'],'05-12':['看護の日'],'05-13':['カクテルの日'],'05-14':['温度計の日'],'05-15':['沖縄本土復帰記念日'],
+ '05-16':['旅の日'],'05-17':['お茶漬けの日'],'05-18':['国際博物館の日'],'05-19':['ボクシングの日'],'05-20':['森林の日'],
+ '05-21':['世界文化多様性デー'],'05-22':['国際生物多様性の日'],'05-23':['ラブレターの日'],'05-24':['ゴルフ場記念日'],'05-25':['広辞苑記念日'],
+ '05-26':['東名高速全線開通の日'],'05-27':['百人一首の日'],'05-28':['花火の日'],'05-29':['こんにゃくの日'],'05-30':['ごみゼロの日'],
+ '05-31':['世界禁煙デー'],
+ '06-01':['衣替え','気象記念日'],'06-02':['横浜開港記念日'],'06-03':['測量の日'],'06-04':['虫歯予防デー'],'06-05':['世界環境デー'],
+ '06-06':['楽器の日'],'06-07':['母親大会記念日'],'06-08':['世界海洋デー'],'06-09':['ネッシーの日'],'06-10':['時の記念日'],
+ '06-11':['傘の日'],'06-12':['恋人の日'],'06-13':['はやぶさの日'],'06-14':['世界献血者デー'],'06-15':['生姜の日'],
+ '06-16':['和菓子の日'],'06-17':['おまわりさんの日'],'06-18':['おにぎりの日'],'06-19':['桜桃忌'],'06-20':['ペパーミントの日'],
+ '06-21':['冷蔵庫の日'],'06-22':['ボウリングの日'],'06-23':['オリンピックデー'],'06-24':['UFO記念日'],'06-25':['住宅の日'],
+ '06-26':['露天風呂の日'],'06-27':['ちらし寿司の日'],'06-28':['パフェの日'],'06-29':['ビートルズ記念日'],'06-30':['夏越の祓'],
+ '07-01':['富士山山開き'],'07-02':['うどんの日'],'07-03':['ソフトクリームの日'],'07-04':['梨の日'],'07-05':['ビキニスタイルの日'],
+ '07-06':['サラダ記念日'],'07-07':['七夕'],'07-08':['質屋の日'],'07-09':['ジェットコースターの日'],'07-10':['納豆の日'],
+ '07-11':['ラーメンの日'],'07-12':['人間ドックの日'],'07-13':['オカルト記念日'],'07-14':['ひまわりの日'],'07-15':['ファミコンの日'],
+ '07-16':['駅弁記念日'],'07-17':['東京の日'],'07-18':['光化学スモッグの日'],'07-19':['女性大臣の日'],'07-20':['月面着陸の日','ハンバーガーの日'],
+ '07-21':['日本三景の日'],'07-22':['ナッツの日'],'07-23':['天ぷらの日'],'07-24':['河童忌'],'07-25':['かき氷の日'],
+ '07-26':['幽霊の日'],'07-27':['スイカの日'],'07-28':['世界肝炎デー'],'07-29':['アマチュア無線の日'],'07-30':['梅干の日'],
+ '07-31':['蓄音機の日'],
+ '08-01':['水の日'],'08-02':['ハーブの日'],'08-03':['はちみつの日'],'08-04':['橋の日'],'08-05':['ハンコの日'],
+ '08-06':['広島原爆の日'],'08-07':['バナナの日'],'08-08':['そろばんの日'],'08-09':['長崎原爆の日','ムーミンの日'],'08-10':['道の日'],
+ '08-11':['山の日'],'08-12':['航空安全の日'],'08-13':['左利きの日'],'08-14':['専売特許の日'],'08-15':['終戦記念日'],
+ '08-16':['京都五山送り火'],'08-17':['パイナップルの日'],'08-18':['高校野球記念日'],'08-19':['俳句の日'],'08-20':['蚊の日'],
+ '08-21':['献血の日'],'08-22':['チンチン電車の日'],'08-23':['白虎隊の日'],'08-24':['ラグビーの日'],'08-25':['即席ラーメン記念日'],
+ '08-26':['レインボーブリッジの日'],'08-27':['男はつらいよの日'],'08-28':['民放テレビスタートの日'],'08-29':['焼き肉の日'],'08-30':['冒険家の日'],
+ '08-31':['野菜の日'],
+ '09-01':['防災の日'],'09-02':['宝くじの日'],'09-03':['ドラえもんの誕生日'],'09-04':['くしの日'],'09-05':['国民栄誉賞の日'],
+ '09-06':['黒の日'],'09-07':['CMソングの日'],'09-08':['桑の日'],'09-09':['重陽の節句','救急の日'],'09-10':['下水道の日'],
+ '09-11':['公衆電話の日'],'09-12':['宇宙の日'],'09-13':['世界の法の日'],'09-14':['コスモスの日'],'09-15':['ひじきの日'],
+ '09-16':['国際オゾン層保護デー'],'09-17':['モノレール開業記念日'],'09-18':['かいわれ大根の日'],'09-19':['苗字の日'],'09-20':['バスの日','空の日'],
+ '09-21':['国際平和デー'],'09-22':['カーフリーデー'],'09-23':['万年筆の日'],'09-24':['みどりの窓口記念日'],'09-25':['藤ノ木古墳の日'],
+ '09-26':['ワープロの日'],'09-27':['世界観光デー'],'09-28':['パソコン記念日'],'09-29':['招き猫の日'],'09-30':['くるみの日'],
+ '10-01':['コーヒーの日'],'10-02':['豆腐の日'],'10-03':['登山の日'],'10-04':['いわしの日'],'10-05':['時刻表記念日'],
+ '10-06':['国際協力の日'],'10-07':['盗難防止の日'],'10-08':['木の日'],'10-09':['世界郵便デー'],'10-10':['目の愛護デー','銭湯の日'],
+ '10-11':['ウインクの日'],'10-12':['豆乳の日'],'10-13':['サツマイモの日'],'10-14':['鉄道の日'],'10-15':['きのこの日'],
+ '10-16':['世界食料デー'],'10-17':['貯蓄の日'],'10-18':['統計の日','冷凍食品の日'],'10-19':['バーゲンの日'],'10-20':['リサイクルの日'],
+ '10-21':['あかりの日'],'10-22':['時代祭'],'10-23':['電信電話記念日'],'10-24':['国連デー'],'10-25':['世界パスタデー'],
+ '10-26':['柿の日','原子力の日'],'10-27':['読書の日','テディベアの日'],'10-28':['速記記念日'],'10-29':['インターネット誕生日'],'10-30':['たまごかけごはんの日'],
+ '10-31':['ハロウィン'],
+ '11-01':['犬の日','紅茶の日'],'11-02':['阪神タイガース記念日'],'11-03':['文化の日','まんがの日'],'11-04':['ユネスコ憲章記念日'],'11-05':['世界津波の日'],
+ '11-06':['お見合い記念日'],'11-07':['鍋の日'],'11-08':['いい歯の日'],'11-09':['119番の日'],'11-10':['トイレの日'],
+ '11-11':['ポッキー＆プリッツの日'],'11-12':['洋服記念日'],'11-13':['うるしの日'],'11-14':['世界糖尿病デー'],'11-15':['七五三'],
+ '11-16':['国際寛容デー'],'11-17':['将棋の日'],'11-18':['ミッキーマウスの誕生日'],'11-19':['世界トイレデー'],'11-20':['ピザの日','世界こどもの日'],
+ '11-21':['フライドチキンの日'],'11-22':['いい夫婦の日'],'11-23':['勤労感謝の日'],'11-24':['和食の日'],'11-25':['ハイビジョンの日'],
+ '11-26':['いい風呂の日'],'11-27':['ノーベル賞制定記念日'],'11-28':['フランスパンの日'],'11-29':['いい肉の日'],'11-30':['カメラの日'],
+ '12-01':['映画の日'],'12-02':['日本人宇宙飛行記念日'],'12-03':['カレンダーの日'],'12-04':['E.T.の日'],'12-05':['国際ボランティアデー'],
+ '12-06':['音の日'],'12-07':['クリスマスツリーの日'],'12-08':['太平洋戦争開戦の日'],'12-09':['国際腐敗防止デー'],'12-10':['世界人権デー'],
+ '12-11':['百円玉記念日'],'12-12':['漢字の日'],'12-13':['正月事始め'],'12-14':['忠臣蔵討ち入りの日'],'12-15':['観光バス記念日'],
+ '12-16':['電話創業の日'],'12-17':['飛行機の日'],'12-18':['東京駅完成記念日'],'12-19':['日本初飛行の日'],'12-20':['デパート開業の日'],
+ '12-21':['バスケットボールの日'],'12-22':['冬至'],'12-23':['東京タワー完成の日'],'12-24':['クリスマス・イヴ'],'12-25':['クリスマス'],
+ '12-26':['プロ野球誕生の日'],'12-27':['ピーターパンの日'],'12-28':['御用納め'],'12-29':['シャンソンの日'],'12-30':['地下鉄記念日'],
+ '12-31':['大晦日','除夜の鐘'],
+};
+function annivFor(m, d){ const list=(ANNIV[pad2(m)+'-'+pad2(d)]||[]).slice(); if(d===29) list.push('肉の日'); return list; }
+
+// ─── 予定・メモ（書き込みカレンダー） ────────────────────────────────────────
+function dkey(dt){ return dt.getFullYear()+'-'+pad2(dt.getMonth()+1)+'-'+pad2(dt.getDate()); }
+function loadEvents(){ try{ const s=localStorage.getItem('kaiun_events'); if(s) return JSON.parse(s); }catch(e){} return {}; }
+function saveEvents(o){ localStorage.setItem('kaiun_events', JSON.stringify(o)); }
+function eventsFor(key){ const o=loadEvents(); return o[key]||[]; }
+function addEventFor(key, text){ const o=loadEvents(); if(!o[key]) o[key]=[];
+  o[key].push({ id:'e'+Date.now()+Math.floor(Math.random()*1000), text }); saveEvents(o); }
+function deleteEventFor(key, id){ const o=loadEvents(); if(o[key]){ o[key]=o[key].filter(e=>e.id!==id);
+  if(!o[key].length) delete o[key]; saveEvents(o); } }
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let birthDate = null;
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth()+1;
+
+function loadStorage() {
+  try { const s=localStorage.getItem('kaiun_v1'); if(s) birthDate=JSON.parse(s); } catch(e) {}
+}
+function saveStorage(y,m,d) {
+  birthDate = {y,m,d};
+  localStorage.setItem('kaiun_v1', JSON.stringify(birthDate));
+}
+
+// ─── XSS ESCAPE ──────────────────────────────────────────────────────────────
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ─── PARTNERS (相性) ─────────────────────────────────────────────────────────
+let selectedPartnerId = null;
+function loadPartners() {
+  try { const s=localStorage.getItem('kaiun_partners'); if(s) return JSON.parse(s); } catch(e) {}
+  return [];
+}
+function savePartners(list) {
+  localStorage.setItem('kaiun_partners', JSON.stringify(list));
+}
+
+// ─── DISPLAY PREFS (表示カスタマイズ) ────────────────────────────────────────
+const PREF_DEFAULTS = { koyomi:true, moon:true, dir:true, acts:true, avoid:true, color:true };
+function loadPrefs() {
+  const p = Object.assign({}, PREF_DEFAULTS);
+  try { const s=localStorage.getItem('kaiun_prefs'); if(s) Object.assign(p, JSON.parse(s)); } catch(e) {}
+  return p;
+}
+function savePrefs(p) {
+  localStorage.setItem('kaiun_prefs', JSON.stringify(p));
+}
+function togglePref(key, val) {
+  const p = loadPrefs(); p[key] = val; savePrefs(p);
+}
+
+// ─── COMPATIBILITY LOGIC ─────────────────────────────────────────────────────
+// 自分の本命星→相手の本命星の五行方向性から相性を判定
+function compatInfo(myStar, otherStar) {
+  const me = STARS[myStar].elem, oe = STARS[otherStar].elem;
+  let type, label, score, good, bad, strategy;
+  if (me === oe) {
+    type='hiwa'; label='似た者同士'; score=4;
+    good='価値観やペースが近く、言葉にしなくても通じ合いやすい間柄。同じ強みを持つため、力を合わせれば大きな成果を生めます。';
+    bad='似ているぶん弱点も同じで、同族嫌悪や張り合いに発展しがち。役割やこだわりが重なると衝突します。';
+    strategy='あえて役割を分担し、お互いの領分を尊重すると安定します。相手を「もう一人の自分」と思って、先に譲る余裕を持ちましょう。';
+  } else if (GENERATES[me] === oe) {
+    type='give'; label='尽くし甲斐がある'; score=4;
+    good='あなたが相手にエネルギーを与える関係。面倒を見たり育てたりする立場で、感謝されやすく頼りにされます。';
+    bad='与えすぎて消耗したり、相手が甘えて依存しがち。見返りを期待すると不満が溜まりやすくなります。';
+    strategy='与える量に線引きをし、相手の自立を促す関わり方を。尽くしたぶんは、言葉で相手から返してもらう工夫をしましょう。';
+  } else if (GENERATES[oe] === me) {
+    type='receive'; label='支えられる'; score=5;
+    good='相手があなたを生かし支えてくれる、最良の相性の一つ。一緒にいると自然と運気や気力が高まります。';
+    bad='相手に甘えすぎたり、恩を当たり前に感じると関係が細ります。受け取るばかりでは相手も疲れてしまいます。';
+    strategy='素直に頼りつつ、感謝をこまめに言葉で返すこと。相手の負担に気を配れば、長く続く良縁になります。';
+  } else if (CONTROLS[me] === oe) {
+    type='dominate'; label='主導権は自分'; score=2;
+    good='あなたが場をコントロールしやすく、主導権を握れる関係。決断や交渉ではあなたが優位に立てます。';
+    bad='相手が萎縮・我慢しやすく、知らぬ間にストレスを与えがち。押しすぎると反発や離反を招きます。';
+    strategy='勝ちすぎないよう手加減し、相手の意見を先に立てること。命令口調を避け、選択肢を委ねると関係が保てます。';
+  } else { // CONTROLS[oe] === me
+    type='dominated'; label='手強い相手'; score=1;
+    const br = generatorOf(oe); // 相手の五行を生む要素（橋渡し）
+    good='相手から刺激や試練を受け、成長のきっかけをもらえる関係。乗り越えれば大きな信頼へと変わります。';
+    bad='最も注意が必要な相性。真正面からぶつかると押し切られ、プレッシャーやストレスを感じやすい間柄です。';
+    strategy=`相手のペースに正面からぶつからず、${br}の要素を仲介にしましょう。相手の${oe}性を生む「${br}性の話題」や「${br}性の人」を間に立てると、角を立てずに橋渡しできます。`;
+  }
+  if (myStar === otherStar) score = Math.min(5, score + 1); // 本命星が同一なら補正
+  return { type, label, score, good, bad, strategy };
+}
+
+// ─── RENDER TODAY ─────────────────────────────────────────────────────────────
+function renderHeader() {
+  const now = new Date();
+  const ks = getDayKanshi(now);
+  document.getElementById('hDate').textContent =
+    `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${JAP_DOW[now.getDay()]}）${KANSHI_STEM[ks%10]}${KANSHI_BR[ks%12]}`;
+  document.getElementById('hMoon').textContent = moonInfo(getMoonPhase(now)).emoji;
+}
+
+function renderToday() {
+  const wrap = document.getElementById('todayWrap');
+  if (!birthDate) {
+    wrap.innerHTML = `<div class="empty"><div class="ei">🌟</div>
+      <p>生年月日を設定すると<br>あなた専用の開運情報が表示されます</p><br>
+      <a onclick="showTab('settings')">⚙ 設定を開く →</a></div>`;
+    return;
+  }
+  const now = new Date();
+  const bs  = getBirthStar(birthDate.y, birthDate.m, birthDate.d);
+  const sc  = getScore(now, bs);
+  const sl  = scoreLevel(sc);
+  const mi  = moonInfo(getMoonPhase(now));
+  const tensha  = isTenshanichi(now);
+  const manbai  = isIchiryuManbaibi(now);
+  const ds  = getDayStar(now);
+  const ms  = getMonthStar(now);
+  const ys  = getYearStar(now.getFullYear());
+  const ld  = getLuckyDirs(bs, ms);
+
+  // Compass 3×3: grid order NW,N,NE / W,center,E / SW,S,SE
+  // direction indices: N=0 NE=1 E=2 SE=3 S=4 SW=5 W=6 NW=7
+  const gridOrder = [7,0,1, 6,-1,2, 5,4,3];
+  const compHTML = gridOrder.map(gi => {
+    if (gi === -1) return `<div class="cd center">☯</div>`;
+    const d = ld[gi];
+    return `<div class="cd ${d.type}">
+      <div class="cd-dir">${d.dir}</div>
+      <div class="cd-lbl">${d.lbl || '—'}</div>
+      <div class="cd-star">${STARS[d.star].name.slice(0,2)}</div>
+    </div>`;
+  }).join('');
+
+  // Actions
+  const acts = [];
+  if (tensha) acts.push({ic:'☀️', t:'天赦日 — 全ての罪が許される最強の開運日！新しいことを始めるのに最適。', sp:true});
+  if (manbai) acts.push({ic:'🌱', t:'一粒万倍日 — 種まきの日。小さな行動が大きな実りになる。', sp:true});
+  STARS[bs].acts.forEach(a => acts.push({ic:'⭐', t:a}));
+  if (!tensha && !manbai && ds !== bs)
+    acts.push({ic:'💫', t:`今日の日盤は${STARS[ds].name}。${STARS[ds].acts[0]}`});
+
+  const actsHTML = acts.slice(0,5).map(a =>
+    `<div class="act-item${a.sp?' sp':''}"><span class="act-ic">${a.ic}</span><span class="act-txt">${a.t}</span></div>`
+  ).join('');
+
+  const avoidHTML = STARS[bs].avoid.map(a => `<span class="avoid-tag">⚠ ${a}</span>`).join('');
+
+  const lc = STARS[bs].lucky[0];
+  const lcCSS = LUCKY_CSS[lc] || '#888';
+
+  const goodDirs = ld.filter(d=>d.type==='good').map(d=>d.dir);
+  const badDirs  = ld.filter(d=>d.type==='bad').map(d=>d.dir);
+
+  const prefs = loadPrefs();
+
+  const moonCard = `
+    <div class="card">
+      <div class="ctitle">🌙 月の満ち欠け</div>
+      <div class="moon-row">
+        <div class="moon-em">${mi.emoji}</div>
+        <div>
+          <div class="moon-name">${mi.name}</div>
+          <div class="moon-desc">${mi.desc}</div>
+        </div>
+      </div>
+    </div>`;
+
+  const dirCard = `
+    <div class="card">
+      <div class="ctitle">🧭 今月の吉方位（月盤：${STARS[ms].name}）</div>
+      <div class="comp-wrap">${compHTML}</div>
+      ${goodDirs.length ? `<p style="font-size:.74rem;color:var(--good);text-align:center;margin-top:8px">✦ 吉方位：${goodDirs.join('・')}</p>` : ''}
+      ${badDirs.length  ? `<p style="font-size:.74rem;color:var(--bad);text-align:center;margin-top:4px">⚠ 凶方位：${badDirs.join('・')}</p>` : ''}
+      <p style="font-size:.64rem;color:var(--muted);text-align:center;margin-top:6px">年盤：${STARS[ys].name} ／ 日盤：${STARS[ds].name}</p>
+    </div>`;
+
+  const actsCard = `
+    <div class="card">
+      <div class="ctitle">✨ 今日の開運アクション</div>
+      ${actsHTML}
+    </div>`;
+
+  const avoidCard = `
+    <div class="card">
+      <div class="ctitle">⚠ 今日避けた方がよいこと</div>
+      ${avoidHTML}
+    </div>`;
+
+  const colorCard = `
+    <div class="card">
+      <div class="ctitle">🎨 今日のラッキーカラー</div>
+      <div class="lc-row">
+        <div class="lc-sw" style="background:${lcCSS}"></div>
+        <div>
+          <div class="lc-name" style="color:${lcCSS}">${lc}</div>
+          <div class="lc-hint">${STARS[bs].name}の幸運色。身に着けると運気アップ。</div>
+        </div>
+      </div>
+    </div>`;
+
+  // 📆 今日の暦（六曜・祝日・記念日）
+  const rk  = getRokuyo(now.getFullYear(), now.getMonth()+1, now.getDate());
+  const hol = holidayName(now.getFullYear(), now.getMonth()+1, now.getDate());
+  const anv = annivFor(now.getMonth()+1, now.getDate());
+  const koyomiCard = `
+    <div class="card">
+      <div class="ctitle">📆 今日の暦</div>
+      <div class="ky-item">
+        <span class="ky-ic">🎴</span>
+        <div class="ky-c">
+          <div class="ky-t">六曜：<span class="${rokuyoTxtCls(rk.idx)}">${ROKUYO[rk.idx]}</span></div>
+          <div class="ky-d">旧暦${rk.k.leap?'閏':''}${rk.k.month}月${rk.k.day}日</div>
+        </div>
+      </div>
+      ${hol ? `<div class="ky-item"><span class="ky-ic">🎌</span><div class="ky-c">
+        <div class="ky-t rk-hol">祝日</div><div class="ky-d">${esc(hol)}</div></div></div>` : ''}
+      <div class="ky-item">
+        <span class="ky-ic">📌</span>
+        <div class="ky-c">
+          <div class="ky-t">今日は何の日</div>
+          <div class="ky-d">${anv.map(a=>esc(a)).join(' ／ ')}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // 今日の予定（ある場合のみ）
+  const todayKey = dkey(now);
+  const todEv = eventsFor(todayKey);
+  const eventsCard = todEv.length ? `
+    <div class="card">
+      <div class="ctitle">🗓 今日の予定</div>
+      ${todEv.map(e=>`<div class="ev-item"><span class="ev-tx">${esc(e.text)}</span></div>`).join('')}
+      <button class="s-btn" style="margin-top:8px" onclick="openDayDetail(${now.getFullYear()},${now.getMonth()+1},${now.getDate()})">予定を編集 →</button>
+    </div>` : '';
+
+  wrap.innerHTML = `
+    <div class="card score-card">
+      <div class="sc-date">今日の運気スコア</div>
+      <div class="sc-row">
+        <div class="sc-num" style="color:${sl.color}">${sc}</div>
+        <div class="sc-right">
+          <div class="sc-level" style="color:${sl.color}">${sl.lv}</div>
+          <div class="sc-label">${STARS[bs].name}</div>
+        </div>
+      </div>
+      <div class="sc-bar-bg"><div class="sc-bar" style="width:${sc}%;background:${sl.bar}"></div></div>
+    </div>
+
+    <div class="badges">
+      <span class="bdg bdg-star">${STARS[bs].emoji} ${STARS[bs].name}（${STARS[bs].elem}）</span>
+      ${tensha ? '<span class="bdg bdg-good">☀️ 天赦日</span>' : ''}
+      ${manbai ? '<span class="bdg bdg-good">🌱 一粒万倍日</span>' : ''}
+    </div>
+    ${prefs.koyomi ? koyomiCard : ''}
+    ${prefs.moon  ? moonCard  : ''}
+    ${prefs.dir   ? dirCard   : ''}
+    ${prefs.acts  ? actsCard  : ''}
+    ${prefs.avoid ? avoidCard : ''}
+    ${prefs.color ? colorCard : ''}
+    ${eventsCard}
+  `;
+}
+
+// ─── RENDER CALENDAR ─────────────────────────────────────────────────────────
+function renderCalendar() {
+  document.getElementById('calLbl').textContent = `${calYear}年 ${calMonth}月`;
+  const grid = document.getElementById('calGrid');
+  const bs = birthDate ? getBirthStar(birthDate.y, birthDate.m, birthDate.d) : null;
+  const dows = ['日','月','火','水','木','金','土'];
+  let html = dows.map((d,i) =>
+    `<div class="cal-dow" style="${i===0?'color:#f87171':i===6?'color:#60a5fa':''}">${d}</div>`
+  ).join('');
+
+  const first = new Date(calYear, calMonth-1, 1);
+  const last  = new Date(calYear, calMonth,   0);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const startDow = first.getDay();
+
+  // Leading blank days
+  for (let i = 0; i < startDow; i++) {
+    const d = new Date(calYear, calMonth-1, -startDow+i+1);
+    html += `<div class="cal-day om"><div class="cal-num">${d.getDate()}</div></div>`;
+  }
+
+  for (let d = 1; d <= last.getDate(); d++) {
+    const dt = new Date(calYear, calMonth-1, d);
+    const isToday = dt.getTime() === today.getTime();
+    const dow = dt.getDay();
+    const numCls = dow===0?'sun':dow===6?'sat':'';
+    const tensha = isTenshanichi(dt);
+    const manbai = isIchiryuManbaibi(dt);
+    const phase  = getMoonPhase(dt);
+    const pf = phase / 29.53058867;
+    const isNew  = pf < 0.03 || pf > 0.97;
+    const isFull = pf > 0.47 && pf < 0.53;
+    const sc  = bs ? getScore(dt, bs) : null;
+    const sl  = sc  ? scoreLevel(sc)  : null;
+    const rk  = getRokuyo(calYear, calMonth, d);
+    const hol = holidayName(calYear, calMonth, d);
+    const hasEv = eventsFor(dkey(dt)).length > 0;
+
+    let dots = '';
+    if (tensha) dots += '<div class="dot tensha"></div>';
+    if (manbai) dots += '<div class="dot manbai"></div>';
+    if (isNew)  dots += '<div class="dot newmoon"></div>';
+    if (isFull) dots += '<div class="dot fullmoon"></div>';
+
+    html += `<div class="cal-day${isToday?' today':''}" onclick="openDayDetail(${calYear},${calMonth},${d})">
+      ${hasEv ? '<span class="cal-pin">📌</span>' : ''}
+      <div class="cal-num ${numCls}${hol?' hol':''}">${d}</div>
+      <div class="cal-rk ${rokuyoCalCls(rk.idx)}">${ROKUYO[rk.idx]}</div>
+      ${hol ? `<div class="cal-hol">${esc(hol)}</div>` : ''}
+      <div class="cal-dots">${dots}</div>
+      ${sl ? `<div class="cal-score" style="width:${sc}%;background:${sl.bar}"></div>` : ''}
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+// ─── 日詳細ボトムシート ──────────────────────────────────────────────────────
+let detailKey = null;
+function openDayDetail(y, m, d) {
+  detailKey = y + '-' + pad2(m) + '-' + pad2(d);
+  renderDayDetail();
+  document.getElementById('daySheetOv').classList.add('show');
+}
+function closeDayDetail() {
+  document.getElementById('daySheetOv').classList.remove('show');
+  detailKey = null;
+}
+function renderDayDetail() {
+  if (!detailKey) return;
+  const [y, m, d] = detailKey.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  const ks = getDayKanshi(dt);
+  const rk = getRokuyo(y, m, d);
+  const hol = holidayName(y, m, d);
+  const anv = annivFor(m, d);
+  const tensha = isTenshanichi(dt), manbai = isIchiryuManbaibi(dt);
+  const phase = getMoonPhase(dt), pf = phase / 29.53058867;
+  const isNew = pf < 0.03 || pf > 0.97, isFull = pf > 0.47 && pf < 0.53;
+  const bs = birthDate ? getBirthStar(birthDate.y, birthDate.m, birthDate.d) : null;
+
+  const badges = [];
+  if (hol)    badges.push(`<span class="bdg bdg-good">🎌 ${esc(hol)}</span>`);
+  if (tensha) badges.push('<span class="bdg bdg-good">☀️ 天赦日</span>');
+  if (manbai) badges.push('<span class="bdg bdg-good">🌱 一粒万倍日</span>');
+  if (isNew)  badges.push('<span class="bdg bdg-star">🌑 新月</span>');
+  if (isFull) badges.push('<span class="bdg bdg-star">🌕 満月</span>');
+
+  let scoreHTML = '';
+  if (bs) {
+    const sc = getScore(dt, bs), sl = scoreLevel(sc);
+    scoreHTML = `<div class="sd-sec"><div class="sd-h">運気スコア</div>
+      <div class="sd-score"><div class="sd-scnum" style="color:${sl.color}">${sc}</div>
+        <div><div style="font-size:1rem;font-weight:700;color:${sl.color}">${sl.lv}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${STARS[bs].name}</div></div></div></div>`;
+  }
+
+  const ev = eventsFor(detailKey);
+  const evHTML = ev.length
+    ? ev.map(e => `<div class="ev-item"><span class="ev-tx">${esc(e.text)}</span>
+        <button class="ev-del" onclick="removeEvent('${e.id}')">削除</button></div>`).join('')
+    : '<div class="ev-empty">予定はまだありません</div>';
+
+  document.getElementById('daySheet').innerHTML = `
+    <div class="sheet-grip"></div>
+    <div class="sheet-hd">
+      <div>
+        <div class="sheet-date">${y}年${m}月${d}日（${JAP_DOW[dt.getDay()]}）</div>
+        <div class="sheet-sub">${KANSHI_STEM[ks%10]}${KANSHI_BR[ks%12]} ／ 六曜：<span class="${rokuyoTxtCls(rk.idx)}">${ROKUYO[rk.idx]}</span> ／ 旧暦${rk.k.leap?'閏':''}${rk.k.month}月${rk.k.day}日</div>
+      </div>
+      <button class="sheet-x" onclick="closeDayDetail()">✕</button>
+    </div>
+    ${badges.length ? `<div class="sd-badges">${badges.join('')}</div>` : ''}
+    <div class="sd-sec"><div class="sd-h">今日は何の日</div>
+      <div class="sd-line">${anv.map(a=>esc(a)).join(' ／ ')}</div></div>
+    ${scoreHTML}
+    <div class="sd-sec">
+      <div class="sd-h">予定・メモ</div>
+      ${evHTML}
+      <div class="ev-form">
+        <input type="text" class="ev-in" id="evInput" maxlength="40" placeholder="予定を入力（最大40字）"
+          onkeydown="if(event.key==='Enter')submitEvent()">
+        <button class="ev-add" onclick="submitEvent()">追加</button>
+      </div>
+    </div>`;
+}
+function submitEvent() {
+  if (!detailKey) return;
+  const inp = document.getElementById('evInput');
+  const text = inp.value.trim().slice(0, 40);
+  if (!text) return;
+  addEventFor(detailKey, text);
+  renderDayDetail();
+  renderCalendar();
+  if (document.getElementById('sc-today').classList.contains('active')) renderToday();
+}
+function removeEvent(id) {
+  if (!detailKey) return;
+  deleteEventFor(detailKey, id);
+  renderDayDetail();
+  renderCalendar();
+  if (document.getElementById('sc-today').classList.contains('active')) renderToday();
+}
+
+// ─── RENDER COMPATIBILITY ────────────────────────────────────────────────────
+function partnerStar(p){ return getBirthStar(p.y, p.m, p.d); }
+
+function renderCompat() {
+  const w = document.getElementById('compatWrap');
+  if (!birthDate) {
+    w.innerHTML = `<div class="empty"><div class="ei">💞</div>
+      <p>相性診断には、まず<br>あなたの生年月日設定が必要です</p><br>
+      <a onclick="showTab('settings')">⚙ 設定を開く →</a></div>`;
+    return;
+  }
+  const myStar = getBirthStar(birthDate.y, birthDate.m, birthDate.d);
+  const partners = loadPartners();
+
+  // 登録フォーム
+  let html = `
+    <div class="card">
+      <div class="ctitle">💞 相手を登録</div>
+      <input type="text" class="p-input" id="pName" maxlength="12" placeholder="名前・関係（例：上司／母／A子）">
+      <input type="date" class="p-input" id="pDate" max="${new Date().toISOString().slice(0,10)}">
+      <button class="s-btn" onclick="addPartner()">相手を追加 →</button>
+    </div>`;
+
+  // 登録済みリスト
+  if (partners.length) {
+    html += `<div class="card"><div class="ctitle">👥 登録した相手（タップで診断）</div>`;
+    html += partners.map(p => {
+      const st = STARS[partnerStar(p)];
+      const sel = p.id === selectedPartnerId ? ' sel' : '';
+      return `<div class="p-item${sel}" onclick="selectPartner('${p.id}')">
+        <span class="p-em">${st.emoji}</span>
+        <div style="min-width:0">
+          <div class="p-name">${esc(p.name)}</div>
+          <div class="p-meta">${p.y}/${p.m}/${p.d} ・ ${st.name}</div>
+        </div>
+        <button class="p-del" onclick="event.stopPropagation();deletePartner('${p.id}')">削除</button>
+      </div>`;
+    }).join('');
+    html += `</div>`;
+  } else {
+    html += `<div class="card" style="text-align:center;color:var(--muted);font-size:.82rem;line-height:1.7">
+      相手を登録すると<br>相性と「攻略アドバイス」が表示されます</div>`;
+  }
+
+  // 診断結果
+  const sel = partners.find(p => p.id === selectedPartnerId);
+  if (sel) {
+    const oStar = partnerStar(sel);
+    const meS = STARS[myStar], oS = STARS[oStar];
+    const ci = compatInfo(myStar, oStar);
+    const stars = '★★★★★'.slice(0, ci.score) + '☆☆☆☆☆'.slice(0, 5 - ci.score);
+    const tori = oS.torisetsu;
+
+    html += `
+    <div class="card">
+      <div class="ctitle">🔮 相性診断</div>
+      <div class="cmp-pair">
+        <div class="cmp-person">
+          <div class="cmp-em">${meS.emoji}</div>
+          <div class="cmp-nm">あなた</div>
+          <div class="cmp-star">${meS.name}（${meS.elem}）</div>
+        </div>
+        <div class="cmp-vs">✕</div>
+        <div class="cmp-person">
+          <div class="cmp-em">${oS.emoji}</div>
+          <div class="cmp-nm">${esc(sel.name)}</div>
+          <div class="cmp-star">${oS.name}（${oS.elem}）</div>
+        </div>
+      </div>
+      <div class="cmp-type">${ci.label}</div>
+      <div class="cmp-score" style="color:var(--gold-l)">${stars}</div>
+      <div class="cmp-tlbl">相性スコア ${ci.score} / 5</div>
+      <div class="cmp-block">
+        <div class="cmp-h g">◎ 良いところ</div>
+        <div class="cmp-p">${ci.good}</div>
+      </div>
+      <div class="cmp-block">
+        <div class="cmp-h b">△ こじれやすいポイント</div>
+        <div class="cmp-p">${ci.bad}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctitle">🛠 攻略アドバイス — ${oS.name}の取扱説明書</div>
+      <div class="tori-box">
+        <div class="tori-line"><span class="tori-k">😊 喜ぶこと：</span>${tori.likes}</div>
+        <div class="tori-line"><span class="tori-k">🚫 NG行動：</span>${tori.ng}</div>
+        <div class="tori-line"><span class="tori-k">🤝 接し方：</span>${tori.approach}</div>
+      </div>
+      <div class="strat-box">
+        <div class="cmp-h" style="color:var(--gold-l)">🎯 この関係の攻略法</div>
+        <div class="cmp-p">${ci.strategy}</div>
+      </div>
+    </div>`;
+  }
+
+  w.innerHTML = html;
+}
+
+function addPartner() {
+  const name = document.getElementById('pName').value.trim();
+  const dv   = document.getElementById('pDate').value;
+  if (!name) { alert('名前・関係を入力してください'); return; }
+  if (!dv)   { alert('相手の生年月日を入力してください'); return; }
+  const [y,m,d] = dv.split('-').map(Number);
+  const list = loadPartners();
+  const id = 'p' + Date.now() + Math.floor(Math.random()*1000);
+  list.push({ id, name, y, m, d });
+  savePartners(list);
+  selectedPartnerId = id;
+  renderCompat();
+}
+
+function deletePartner(id) {
+  const list = loadPartners().filter(p => p.id !== id);
+  savePartners(list);
+  if (selectedPartnerId === id) selectedPartnerId = null;
+  renderCompat();
+}
+
+function selectPartner(id) {
+  selectedPartnerId = (selectedPartnerId === id) ? null : id;
+  renderCompat();
+}
+
+// ─── RENDER SETTINGS ─────────────────────────────────────────────────────────
+function renderSettings() {
+  const w = document.getElementById('settingsWrap');
+  const prefs = loadPrefs();
+  const val = birthDate
+    ? `${birthDate.y}-${String(birthDate.m).padStart(2,'0')}-${String(birthDate.d).padStart(2,'0')}`
+    : '';
+  let preview = '';
+  if (birthDate) {
+    const bs = getBirthStar(birthDate.y, birthDate.m, birthDate.d);
+    const st = STARS[bs];
+    const dirName = st.dirIdx >= 0 ? DIRS[st.dirIdx] : '中央';
+    preview = `<div class="star-card">
+      <h3>${st.emoji} ${st.name}</h3>
+      <p>五行：${st.elem} ／ 本命方位：${dirName}<br>
+      ラッキーカラー：${st.lucky.join('・')}<br>
+      強み：${st.acts[0]}</p>
+    </div>`;
+  }
+  w.innerHTML = `
+    <div class="card">
+      <div class="ctitle">🌟 生年月日設定</div>
+      <div class="s-label">生年月日を入力（節分2/4以前生まれは前年として計算）</div>
+      <input type="date" class="s-input" id="bdInput" value="${val}"
+        max="${new Date().toISOString().slice(0,10)}">
+      <button class="s-btn" onclick="saveBirth()">保存して本命星を確認 →</button>
+      ${preview}
+    </div>
+    <div class="card">
+      <div class="ctitle">🎛 表示カスタマイズ</div>
+      <div style="font-size:.72rem;color:var(--muted);line-height:1.55;margin-bottom:6px">
+        「今日」画面に表示するカードを選べます（運気スコアは常に表示）</div>
+      ${[
+        ['koyomi','📆 今日の暦'],
+        ['moon','🌙 月の満ち欠け'],
+        ['dir','🧭 吉方位'],
+        ['acts','✨ 開運アクション'],
+        ['avoid','⚠ 避けること'],
+        ['color','🎨 ラッキーカラー'],
+      ].map(([k,lbl]) => `
+        <label class="tg-row">
+          <span class="tg-lbl">${lbl}</span>
+          <span class="switch">
+            <input type="checkbox" ${prefs[k]?'checked':''} onchange="togglePref('${k}',this.checked)">
+            <span class="slider"></span>
+          </span>
+        </label>`).join('')}
+    </div>
+    <div class="card">
+      <div class="ctitle">📖 九星気学について</div>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.7">
+        九星気学は生年によって決まる「本命星」と、年・月・日ごとに変わる「方位盤」を組み合わせ、
+        吉方位や開運行動を導き出す東洋の開運術です。方位盤は9年周期で変化します。</p>
+    </div>
+    <div class="card">
+      <div class="ctitle">🔮 九星 一覧</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        ${STARS.slice(1).map(s=>`
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:1rem">${s.emoji}</span>
+            <span style="font-size:.85rem;color:${s.color};font-weight:600">${s.name}</span>
+            <span style="font-size:.75rem;color:var(--muted)">${s.elem}・${s.lucky[0]}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="font-size:.72rem;color:var(--muted);line-height:1.6">
+      <div class="ctitle">ℹ 免責事項</div>
+      本アプリの情報は参考用です。日盤の計算は概算値を使用しています。
+      重要な判断は専門家にご相談ください。
+    </div>
+  `;
+}
+
+function saveBirth() {
+  const v = document.getElementById('bdInput').value;
+  if (!v) { alert('生年月日を入力してください'); return; }
+  const [y,m,d] = v.split('-').map(Number);
+  saveStorage(y, m, d);
+  renderSettings();
+  renderToday();
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+const TAB_IDS = ['today','calendar','compat','settings'];
+function showTab(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sc-'+id).classList.add('active');
+  document.querySelectorAll('.tab')[TAB_IDS.indexOf(id)].classList.add('active');
+  if (id === 'calendar') renderCalendar();
+  else if (id === 'compat') renderCompat();
+  else if (id === 'settings') renderSettings();
+  else renderToday();
+}
+
+function calPrev() { if (--calMonth < 1)  { calMonth=12; calYear--; } renderCalendar(); }
+function calNext() { if (++calMonth > 12) { calMonth=1;  calYear++; } renderCalendar(); }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadStorage();
+renderHeader();
+renderToday();
+</script>
+</body>
+</html>
