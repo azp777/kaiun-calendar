@@ -7,6 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0d0920">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>開運カレンダー</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -173,6 +175,27 @@ input[type=date].s-input:focus{border-color:var(--gold)}
 .ev-in:focus{border-color:var(--gold)}
 .ev-add{background:linear-gradient(135deg,#4d2d9e,#2a1a55);border:1px solid #6d4dae;color:#ede8fa;border-radius:9px;padding:0 15px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0}
 .ev-empty{font-size:.78rem;color:var(--muted);padding:2px 0 4px}
+/* 機能A: 不成就日・寅・巳・甲子 */
+.dot.fujoju{background:#f87171}
+.bdg-bad{background:#2d0a0a;border:1px solid #7f1d1d;color:#fca5a5}
+.bdg-gold{background:#2a2005;border:1px solid #6b5410;color:#f5c842}
+/* 機能B: 最適日検索 */
+.gold-btn{width:100%;background:linear-gradient(135deg,#d4a017,#8a6a0e);border:1px solid var(--gold-l);color:#1a0a3e;border-radius:10px;padding:11px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:12px;transition:transform .15s}
+.gold-btn:active{transform:scale(.98)}
+.chip-row{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 10px;-webkit-overflow-scrolling:touch}
+.chip{flex:0 0 auto;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:20px;padding:8px 14px;font-size:.8rem;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
+.chip.sel{background:linear-gradient(135deg,#d4a017,#8a6a0e);border-color:var(--gold-l);color:#1a0a3e;font-weight:700}
+.best-row{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.best-row:active{border-color:var(--gold)}
+.best-rank{font-size:1.15rem;font-weight:800;color:var(--gold-l);width:24px;text-align:center;flex-shrink:0}
+.best-c{flex:1;min-width:0}
+.best-date{font-size:.92rem;font-weight:700}
+.best-reason{font-size:.72rem;color:var(--muted);margin-top:2px;line-height:1.45}
+.best-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.best-mini{font-size:.62rem;border-radius:10px;padding:1px 7px;font-weight:600;white-space:nowrap}
+.best-score{font-size:1.5rem;font-weight:800;line-height:1;flex-shrink:0;text-align:center}
+.best-score .best-slbl{font-size:.58rem;font-weight:600;color:var(--muted);display:block;margin-top:2px}
+.best-empty{text-align:center;color:var(--muted);font-size:.82rem;line-height:1.7;padding:24px 8px}
 </style>
 </head>
 <body>
@@ -197,12 +220,14 @@ input[type=date].s-input:focus{border-color:var(--gold)}
     <span class="cal-lbl" id="calLbl"></span>
     <button class="cal-btn" onclick="calNext()">›</button>
   </div>
+  <button class="gold-btn" onclick="openBestDay()">🔍 最適日をさがす</button>
   <div class="cal-grid" id="calGrid"></div>
   <div class="legend">
     <div class="leg"><div class="dot tensha"></div>天赦日</div>
     <div class="leg"><div class="dot manbai"></div>一粒万倍日</div>
     <div class="leg"><div class="dot newmoon"></div>新月</div>
     <div class="leg"><div class="dot fullmoon"></div>満月</div>
+    <div class="leg"><div class="dot fujoju"></div>不成就日</div>
     <div class="leg"><span class="cal-ev" style="margin:0 4px 0 0;max-width:44px">予定</span>予定</div>
     <div class="leg"><div class="leg-bar"></div>バーの色＝運気</div>
   </div>
@@ -212,6 +237,9 @@ input[type=date].s-input:focus{border-color:var(--gold)}
 
 <div class="sheet-ov" id="daySheetOv" onclick="if(event.target===this)closeDayDetail()">
   <div class="sheet" id="daySheet"></div>
+</div>
+<div class="sheet-ov" id="bestSheetOv" onclick="if(event.target===this)closeBestDay()">
+  <div class="sheet" id="bestSheet"></div>
 </div>
 
 <script>
@@ -414,6 +442,24 @@ function getTenshaSeason(date) {
 function isTenshanichi(date) {
   return getDayKanshi(date) === [14,30,44,0][getTenshaSeason(date)];
 }
+
+// 不成就日: 旧暦の月・日から判定（閏月は本月と同じ月番号扱い＝getKyurekiのmonthをそのまま使用）
+const FUJOJU_DAYS = [
+  [3,11,19,27], // 旧暦1月・7月
+  [2,10,18,26], // 旧暦2月・8月
+  [1,9,17,25],  // 旧暦3月・9月
+  [4,12,20,28], // 旧暦4月・10月
+  [5,13,21,29], // 旧暦5月・11月
+  [6,14,22,30], // 旧暦6月・12月
+];
+function isFujoju(y, m, d) {
+  const k = getKyureki(y, m, d);
+  return FUJOJU_DAYS[(k.month - 1) % 6].includes(k.day);
+}
+// 寅の日・巳の日・甲子の日（日の干支から判定）
+function isToraDay(date)   { return getDayKanshi(date) % 12 === 2; }
+function isMiDay(date)     { return getDayKanshi(date) % 12 === 5; }
+function isKinoeneDay(date){ return getDayKanshi(date) === 0; }
 
 // Board: for a given center star, what star sits at each direction?
 function getBoard(centerStar) {
@@ -909,6 +955,12 @@ function renderToday() {
   const rk  = getRokuyo(now.getFullYear(), now.getMonth()+1, now.getDate());
   const hol = holidayName(now.getFullYear(), now.getMonth()+1, now.getDate());
   const anv = annivFor(now.getMonth()+1, now.getDate());
+  const nyF = isFujoju(now.getFullYear(), now.getMonth()+1, now.getDate());
+  const nyBadges = [];
+  if (isKinoeneDay(now)) nyBadges.push('<span class="bdg bdg-gold">✨ 甲子の日</span>');
+  if (isToraDay(now))    nyBadges.push('<span class="bdg bdg-gold">🐯 寅の日</span>');
+  if (isMiDay(now))      nyBadges.push('<span class="bdg bdg-gold">🐍 巳の日</span>');
+  if (nyF)               nyBadges.push('<span class="bdg bdg-bad">⚠ 不成就日</span>');
   const koyomiCard = `
     <div class="card">
       <div class="ctitle">📆 今日の暦</div>
@@ -919,6 +971,8 @@ function renderToday() {
           <div class="ky-d">旧暦${rk.k.leap?'閏':''}${rk.k.month}月${rk.k.day}日</div>
         </div>
       </div>
+      ${nyBadges.length ? `<div class="ky-item"><span class="ky-ic">📿</span><div class="ky-c">
+        <div class="sd-badges" style="margin:2px 0 0">${nyBadges.join('')}</div></div></div>` : ''}
       ${hol ? `<div class="ky-item"><span class="ky-ic">🎌</span><div class="ky-c">
         <div class="ky-t rk-hol">祝日</div><div class="ky-d">${esc(hol)}</div></div></div>` : ''}
       <div class="ky-item">
@@ -1005,11 +1059,13 @@ function renderCalendar() {
     const hol = holidayName(calYear, calMonth, d);
     const ev = eventsFor(dkey(dt));
 
+    const fujoju = isFujoju(calYear, calMonth, d);
     let dots = '';
     if (tensha) dots += '<div class="dot tensha"></div>';
     if (manbai) dots += '<div class="dot manbai"></div>';
     if (isNew)  dots += '<div class="dot newmoon"></div>';
     if (isFull) dots += '<div class="dot fullmoon"></div>';
+    if (fujoju) dots += '<div class="dot fujoju"></div>';
 
     html += `<div class="cal-day${isToday?' today':''}" onclick="openDayDetail(${calYear},${calMonth},${d})">
       <div class="cal-num ${numCls}${hol?' hol':''}">${d}</div>
@@ -1043,6 +1099,7 @@ function renderDayDetail() {
   const hol = holidayName(y, m, d);
   const anv = annivFor(m, d);
   const tensha = isTenshanichi(dt), manbai = isIchiryuManbaibi(dt);
+  const fujoju = isFujoju(y, m, d), tora = isToraDay(dt), mi = isMiDay(dt), kinoe = isKinoeneDay(dt);
   const phase = getMoonPhase(dt), pf = phase / 29.53058867;
   const isNew = pf < 0.03 || pf > 0.97, isFull = pf > 0.47 && pf < 0.53;
   const bs = birthDate ? getBirthStar(birthDate.y, birthDate.m, birthDate.d) : null;
@@ -1051,8 +1108,12 @@ function renderDayDetail() {
   if (hol)    badges.push(`<span class="bdg bdg-good">🎌 ${esc(hol)}</span>`);
   if (tensha) badges.push('<span class="bdg bdg-good">☀️ 天赦日</span>');
   if (manbai) badges.push('<span class="bdg bdg-good">🌱 一粒万倍日</span>');
+  if (kinoe)  badges.push('<span class="bdg bdg-gold">✨ 甲子の日</span>');
+  if (tora)   badges.push('<span class="bdg bdg-gold">🐯 寅の日</span>');
+  if (mi)     badges.push('<span class="bdg bdg-gold">🐍 巳の日</span>');
   if (isNew)  badges.push('<span class="bdg bdg-star">🌑 新月</span>');
   if (isFull) badges.push('<span class="bdg bdg-star">🌕 満月</span>');
+  if (fujoju) badges.push('<span class="bdg bdg-bad">⚠ 不成就日</span>');
 
   let scoreHTML = '';
   if (bs) {
@@ -1108,6 +1169,139 @@ function removeEvent(id) {
   renderDayDetail();
   renderCalendar();
   if (document.getElementById('sc-today').classList.contains('active')) renderToday();
+}
+
+// ─── 機能B: イベント最適日検索 ────────────────────────────────────────────────
+const BEST_PURPOSES = [
+  { key:'wedding',  label:'入籍・結婚' },
+  { key:'business', label:'開業・仕事始め' },
+  { key:'wallet',   label:'財布の新調' },
+  { key:'lottery',  label:'宝くじ購入' },
+  { key:'move',     label:'引っ越し' },
+  { key:'salon',    label:'美容院' },
+  { key:'date',     label:'告白・デート' },
+  { key:'shrine',   label:'神社参拝' },
+];
+let bestPurpose = null;
+
+// 1日分のスコアと該当バッジ・理由を算出
+function scoreBestDay(dt, purposeKey, birthStar) {
+  const y = dt.getFullYear(), m = dt.getMonth()+1, d = dt.getDate();
+  let sc = birthStar ? getScore(dt, birthStar) : 50;
+  const tensha = isTenshanichi(dt), manbai = isIchiryuManbaibi(dt);
+  const kinoe = isKinoeneDay(dt), tora = isToraDay(dt), mi = isMiDay(dt);
+  const fujoju = isFujoju(y, m, d);
+  const rk = getRokuyo(y, m, d).idx; // 大安0 赤口1 先勝2 友引3 先負4 仏滅5
+  // 共通ボーナス
+  if (tensha) sc += 30;
+  if (manbai) sc += 15;
+  if (kinoe)  sc += 8;
+  if (rk === 0) sc += 10; else if (rk === 3) sc += 5; else if (rk === 2) sc += 3;
+  else if (rk === 1) sc -= 5; else if (rk === 5) sc -= 15;
+  if (fujoju) sc -= 40; // 不成就日は吉日が重なっても上位に来ないよう強めに減点
+  // 目的別ボーナス
+  if (purposeKey === 'wallet' || purposeKey === 'lottery') {
+    if (tora) sc += 15;
+    if (mi)   sc += 12;
+  }
+  if (purposeKey === 'wedding' || purposeKey === 'date') {
+    if (rk === 3) sc += 5; // 友引にさらに
+  }
+  if (purposeKey === 'shrine') {
+    if (kinoe) sc += 5; // 甲子にさらに
+  }
+  // バッジ
+  const badges = [];
+  if (tensha) badges.push('<span class="best-mini bdg-good">☀️天赦</span>');
+  if (manbai) badges.push('<span class="best-mini bdg-good">🌱一粒</span>');
+  if (rk === 0) badges.push('<span class="best-mini bdg-gold">大安</span>');
+  if (tora)   badges.push('<span class="best-mini bdg-gold">🐯寅</span>');
+  if (mi)     badges.push('<span class="best-mini bdg-gold">🐍巳</span>');
+  if (kinoe)  badges.push('<span class="best-mini bdg-gold">✨甲子</span>');
+  if (fujoju) badges.push('<span class="best-mini bdg-bad">⚠不成就</span>');
+  // ワンライン理由
+  const pos = [];
+  if (tensha) pos.push('天赦日');
+  if (manbai) pos.push('一粒万倍日');
+  if (rk === 0) pos.push('大安');
+  else if (rk === 3) pos.push('友引');
+  if ((purposeKey === 'wallet' || purposeKey === 'lottery') && tora) pos.push('寅の日');
+  if ((purposeKey === 'wallet' || purposeKey === 'lottery') && mi) pos.push('巳の日');
+  if (kinoe) pos.push('甲子');
+  let reason = pos.length ? pos.join('・') + 'の好日' : '総合運の高い日';
+  if (fujoju) reason += '（ただし不成就日）';
+  return { sc: Math.round(sc), badges, reason, fujoju };
+}
+
+// 起点から90日間を走査し上位5日を返す（同点は早い日付優先）
+function computeBestDays(purposeKey, startDate) {
+  const bs = birthDate ? getBirthStar(birthDate.y, birthDate.m, birthDate.d) : null;
+  const s = startDate || new Date();
+  const start = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+  const out = [];
+  for (let i = 0; i < 90; i++) {
+    const dt = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const r = scoreBestDay(dt, purposeKey, bs);
+    out.push({ dt, i, ...r });
+  }
+  out.sort((a, b) => b.sc - a.sc || a.i - b.i);
+  return out.slice(0, 5);
+}
+
+function openBestDay() {
+  bestPurpose = null;
+  renderBestDay();
+  document.getElementById('bestSheetOv').classList.add('show');
+}
+function closeBestDay() {
+  document.getElementById('bestSheetOv').classList.remove('show');
+}
+function selectPurpose(key) {
+  bestPurpose = key;
+  renderBestDay();
+}
+function selectBestDay(y, m, d) {
+  closeBestDay();
+  openDayDetail(y, m, d);
+}
+function renderBestDay() {
+  const chips = BEST_PURPOSES.map(p =>
+    `<button class="chip${bestPurpose === p.key ? ' sel' : ''}" onclick="selectPurpose('${p.key}')">${p.label}</button>`
+  ).join('');
+
+  let body;
+  if (!bestPurpose) {
+    body = `<div class="best-empty">目的を選ぶと、今日から90日間で<br>もっとも縁起のよい日 上位5日を提案します。</div>`;
+  } else {
+    const list = computeBestDays(bestPurpose);
+    const label = (BEST_PURPOSES.find(p => p.key === bestPurpose) || {}).label || '';
+    body = `<div class="sd-h" style="margin-bottom:8px">「${label}」に良い日 ベスト5（今日から90日）</div>` +
+      list.map((r, idx) => {
+        const y = r.dt.getFullYear(), m = r.dt.getMonth()+1, d = r.dt.getDate();
+        const sl = scoreLevel(Math.min(100, Math.max(0, r.sc)));
+        return `<div class="best-row" onclick="selectBestDay(${y},${m},${d})">
+          <div class="best-rank">${idx + 1}</div>
+          <div class="best-c">
+            <div class="best-date">${m}月${d}日（${JAP_DOW[r.dt.getDay()]}）</div>
+            <div class="best-reason">${r.reason}</div>
+            <div class="best-badges">${r.badges.join('')}</div>
+          </div>
+          <div class="best-score" style="color:${sl.color}">${r.sc}<span class="best-slbl">点</span></div>
+        </div>`;
+      }).join('');
+  }
+
+  document.getElementById('bestSheet').innerHTML = `
+    <div class="sheet-grip"></div>
+    <div class="sheet-hd">
+      <div>
+        <div class="sheet-date">🔍 最適日をさがす</div>
+        <div class="sheet-sub">目的を選んでください</div>
+      </div>
+      <button class="sheet-x" onclick="closeBestDay()">✕</button>
+    </div>
+    <div class="chip-row">${chips}</div>
+    ${body}`;
 }
 
 // ─── RENDER COMPATIBILITY ────────────────────────────────────────────────────
@@ -1296,6 +1490,16 @@ function renderSettings() {
         </label>`).join('')}
     </div>
     <div class="card">
+      <div class="ctitle">💾 データのバックアップ</div>
+      <div style="font-size:.72rem;color:var(--muted);line-height:1.6;margin-bottom:10px">
+        生年月日・予定・相手・表示設定をファイルに保存／復元できます。機種変更時などにご利用ください。</div>
+      <button class="gold-btn" style="margin-bottom:8px" onclick="exportData()">⬇ バックアップを書き出し</button>
+      <label class="s-btn" style="display:block;text-align:center;cursor:pointer;margin-top:0">
+        ⬆ バックアップから読み込み
+        <input type="file" accept=".json,application/json" style="display:none" onchange="importData(this)">
+      </label>
+    </div>
+    <div class="card">
       <div class="ctitle">📖 九星気学について</div>
       <p style="font-size:.78rem;color:var(--muted);line-height:1.7">
         九星気学は生年によって決まる「本命星」と、年・月・日ごとに変わる「方位盤」を組み合わせ、
@@ -1329,6 +1533,56 @@ function saveBirth() {
   renderToday();
 }
 
+// ─── 機能D: データの書き出し・読み込み ───────────────────────────────────────
+const BACKUP_KEYS = ['kaiun_v1','kaiun_events','kaiun_partners','kaiun_prefs'];
+function exportData() {
+  const data = {};
+  BACKUP_KEYS.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v !== null) { try { data[k] = JSON.parse(v); } catch(e) { data[k] = v; } }
+  });
+  const payload = { version:1, exportedAt:new Date().toISOString(), data };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'kaiun-backup.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importData(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let obj;
+    try { obj = JSON.parse(reader.result); }
+    catch(e) { alert('読み込みに失敗しました：不正なJSONファイルです'); input.value = ''; return; }
+    if (!obj || typeof obj !== 'object' || obj.version === undefined || !obj.data || typeof obj.data !== 'object') {
+      alert('読み込みに失敗しました：対応していない形式のファイルです'); input.value = ''; return;
+    }
+    if (!confirm('現在のデータを上書きします。よろしいですか？')) { input.value = ''; return; }
+    BACKUP_KEYS.forEach(k => {
+      if (k in obj.data) {
+        const val = obj.data[k];
+        localStorage.setItem(k, typeof val === 'string' ? val : JSON.stringify(val));
+      }
+    });
+    // 状態と全画面を再描画
+    loadStorage();
+    selectedPartnerId = null;
+    applyTabPrefs();
+    renderHeader();
+    renderToday();
+    renderCalendar();
+    renderCompat();
+    renderSettings();
+    input.value = '';
+    alert('データを読み込みました');
+  };
+  reader.onerror = () => { alert('ファイルの読み込みに失敗しました'); input.value = ''; };
+  reader.readAsText(file);
+}
+
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 const TAB_IDS = ['today','calendar','compat','settings'];
 function showTab(id) {
@@ -1350,6 +1604,13 @@ loadStorage();
 applyTabPrefs();
 renderHeader();
 renderToday();
+
+// ─── 機能C: Service Worker 登録 ──────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
