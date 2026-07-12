@@ -286,10 +286,10 @@ const JAP_DOW=['日','月','火','水','木','金','土'];
 
 // ─── CORE CALCULATIONS ───────────────────────────────────────────────────────
 
-// 年盤中宮 (reference: 2024 = 二黒土星 = 2)
+// 年盤中宮 (reference: 2024 = 三碧木星 = 3)
 function getYearStar(year) {
   const off = ((year - 2024) % 9 + 9) % 9;
-  return ((1 - off + 90) % 9) + 1;
+  return ((2 - off + 90) % 9) + 1;
 }
 
 // 本命星 from birth date (節分 Feb4 adjustment)
@@ -306,17 +306,16 @@ function getMonthInfo(date) {
   const cut = cuts[m-1];
   let branch, effYear = y;
 
+  // 節月: 子月=12月(大雪〜), 丑月=1月(小寒〜), 寅月=2月(立春〜), 卯月=3月(啓蟄〜)…
   if (m === 1) {
-    branch = d < cut ? 11 : 0;  // Dec's 亥 carries over, or new 子月
+    branch = d < cut ? 0 : 1;   // 小寒前=子月 / 以降=丑月
     effYear = y - 1;             // still pre-立春
   } else if (m === 2) {
-    if (d < cut) { branch = 0; effYear = y - 1; }  // 子月, prev year
-    else branch = 1;                                 // 寅月 (branch index 2, but mapped below)
+    if (d < cut) { branch = 1; effYear = y - 1; }  // 立春前=丑月, prev year
+    else branch = 2;                                 // 立春〜=寅月
   } else {
-    // m=2 → branch 1(丑 pre-立春 handled above), m=3 → 2(寅) etc.
-    // After 節気: m=2→1(丑... wait, 立春→寅)
-    // Let me re-map: Feb4 starts 寅月(2), Mar6→卯(3), Apr5→辰(4)...
-    const afterBranch = m;     // Feb=2=寅, Mar=3=卯, Apr=4=辰... Dec=12→0(子)
+    // m=3: 啓蟄前=寅(2)/以降=卯(3), … m=12: 大雪前=亥(11)/以降=子(0)
+    const afterBranch = m;
     const beforeBranch = m - 1;
     branch = d < cut ? (beforeBranch <= 0 ? 11 : beforeBranch) : (afterBranch > 11 ? 0 : afterBranch);
   }
