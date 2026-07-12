@@ -299,27 +299,23 @@ function getBirthStar(y, m, d) {
 }
 
 // Returns {branch:0-11 (子=0..亥=11), effYear for year star}
+// 太陽黄経ベースの正確な節月判定（旧暦計算用の longitudeSun 等を再利用）
+const _monthInfoCache = {};
 function getMonthInfo(date) {
   const y = date.getFullYear(), m = date.getMonth()+1, d = date.getDate();
-  // Approximate 節気 cutoff day within each month (1-indexed months)
-  const cuts = [6,4,6,5,6,6,7,7,8,8,7,7];
-  const cut = cuts[m-1];
-  let branch, effYear = y;
-
-  // 節月: 子月=12月(大雪〜), 丑月=1月(小寒〜), 寅月=2月(立春〜), 卯月=3月(啓蟄〜)…
-  if (m === 1) {
-    branch = d < cut ? 0 : 1;   // 小寒前=子月 / 以降=丑月
-    effYear = y - 1;             // still pre-立春
-  } else if (m === 2) {
-    if (d < cut) { branch = 1; effYear = y - 1; }  // 立春前=丑月, prev year
-    else branch = 2;                                 // 立春〜=寅月
-  } else {
-    // m=3: 啓蟄前=寅(2)/以降=卯(3), … m=12: 大雪前=亥(11)/以降=子(0)
-    const afterBranch = m;
-    const beforeBranch = m - 1;
-    branch = d < cut ? (beforeBranch <= 0 ? 11 : beforeBranch) : (afterBranch > 11 ? 0 : afterBranch);
-  }
-  return { branch, effYear };
+  const key = y*10000 + m*100 + d;
+  if (_monthInfoCache[key]) return _monthInfoCache[key];
+  // その日の「翌日0時JST」時点の太陽黄経 λ（節切り: 節気当日はその日中に節入り→新節月に属する）
+  const jdn = rkJdn(y, m, d);
+  const nextMidnightUT = jdn + 0.125; // 翌日0時JST（= 対象日24:00 JST）
+  const lambda = longitudeSun(rkTof(nextMidnightUT, y));
+  // 立春=315°で寅月(2)開始、345°で卯月(3)、15°で辰月(4)…
+  const branch = (Math.floor(((lambda - 315 + 360) % 360) / 30) + 2) % 12;
+  // 年盤用の年: 1月は常に前年扱い、2月は立春(315°)前のみ前年
+  const effYear = (m <= 2 && lambda < 315) ? y - 1 : y;
+  const res = { branch, effYear };
+  _monthInfoCache[key] = res;
+  return res;
 }
 
 // 月盤中宮
@@ -335,11 +331,11 @@ function getMonthStar(date) {
 }
 
 // 日の干支 index 0-59 (甲子=0 ... 癸亥=59)
-// Reference: Jan 1, 2000 = 庚辰 = index 16
+// Reference: Jan 1, 2000 = 戊午 = index 54
 function getDayKanshi(date) {
   const ref = new Date(2000, 0, 1);
   const days = Math.round((date - ref) / 86400000);
-  return ((days + 16) % 60 + 60) % 60;
+  return ((days + 54) % 60 + 60) % 60;
 }
 
 // 日盤中宮 (approximate — day star starts at month star on 節気 day, decrements daily)
@@ -382,14 +378,25 @@ function moonInfo(phase) {
   return                            { name:'有明月', emoji:'🌘', boost:0.9,  desc:'準備・浄化の時期' };
 }
 
-// 一粒万倍日: day branch must be 子(0)丑(1)午(6)未(7), stem determined by month branch
+// 一粒万倍日: 節月の支ごとに定められた日支2つに該当する日
+const MANBAI_BRANCHES = { // 節月の支 → 一粒万倍日となる日の支2つ
+  2:[1,6],  // 寅月: 丑・午
+  3:[2,9],  // 卯月: 寅・酉
+  4:[0,3],  // 辰月: 子・卯
+  5:[3,4],  // 巳月: 卯・辰
+  6:[5,6],  // 午月: 巳・午
+  7:[6,9],  // 未月: 午・酉
+  8:[0,7],  // 申月: 子・未
+  9:[3,8],  // 酉月: 卯・申
+  10:[6,9], // 戌月: 午・酉
+  11:[9,0], // 亥月: 酉・子
+  0:[11,0], // 子月: 亥・子
+  1:[0,3],  // 丑月: 子・卯
+};
 function isIchiryuManbaibi(date) {
-  const ks = getDayKanshi(date);
-  const stem = ks % 10, br = ks % 12;
-  if (![0,1,6,7].includes(br)) return false;
-  const { branch: mb } = getMonthInfo(date);
-  const startStem = (mb * 2 + 8) % 10;
-  return stem === startStem || stem === (startStem + 1) % 10;
+  const br = getDayKanshi(date) % 12;
+  const mb = getMonthInfo(date).branch;
+  return MANBAI_BRANCHES[mb].includes(br);
 }
 
 // 天赦日: 春=戊寅(14) 夏=甲午(30) 秋=戊申(44) 冬=甲子(0)
