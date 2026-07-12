@@ -65,7 +65,7 @@ header{background:linear-gradient(135deg,#1a0a3e,#0d0920);padding:13px 16px;bord
 .cal-lbl{font-size:1rem;font-weight:700;color:var(--gold-l)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .cal-dow{text-align:center;font-size:.65rem;color:var(--muted);padding:3px 0}
-.cal-day{border-radius:7px;padding:5px 2px;min-height:50px;background:var(--card);border:1px solid var(--border);cursor:pointer;position:relative}
+.cal-day{border-radius:7px;padding:5px 2px;min-height:50px;background:var(--card);border:1px solid var(--border);cursor:pointer;position:relative;min-width:0}
 .cal-day.today{border-color:var(--gold);background:#1e1230}
 .cal-day.om{opacity:.3}
 .cal-num{text-align:center;font-size:.76rem;margin-bottom:3px}
@@ -147,6 +147,8 @@ input[type=date].s-input:focus{border-color:var(--gold)}
 .cal-rk.butsu{color:#9e7b7b}
 .cal-hol{text-align:center;font-size:.5rem;color:#f87171;line-height:1.1;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .cal-pin{position:absolute;top:2px;right:3px;font-size:.52rem;line-height:1}
+.cal-ev{font-size:.56rem;line-height:1.25;color:#b8a5e8;background:rgba(167,139,250,.12);border-radius:4px;padding:0 3px;margin:0 2px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-ev-more{font-size:.5rem;line-height:1;color:var(--sp);text-align:right;margin:0 3px 2px}
 /* 日詳細ボトムシート */
 .sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
 .sheet-ov.show{opacity:1;pointer-events:auto}
@@ -201,7 +203,7 @@ input[type=date].s-input:focus{border-color:var(--gold)}
     <div class="leg"><div class="dot manbai"></div>一粒万倍日</div>
     <div class="leg"><div class="dot newmoon"></div>新月</div>
     <div class="leg"><div class="dot fullmoon"></div>満月</div>
-    <div class="leg">📌 予定あり</div>
+    <div class="leg"><span class="cal-ev" style="margin:0 4px 0 0;max-width:44px">予定</span>予定</div>
     <div class="leg"><div class="leg-bar"></div>バーの色＝運気</div>
   </div>
 </div></div>
@@ -334,7 +336,9 @@ function getMonthStar(date) {
 // Reference: Jan 1, 2000 = 戊午 = index 54
 function getDayKanshi(date) {
   const ref = new Date(2000, 0, 1);
-  const days = Math.round((date - ref) / 86400000);
+  // 時刻を持つDate（new Date()等）でも正午以降に翌日へ丸められないよう日付に正規化
+  const d0 = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const days = Math.round((d0 - ref) / 86400000);
   return ((days + 54) % 60 + 60) % 60;
 }
 
@@ -999,7 +1003,7 @@ function renderCalendar() {
     const sl  = sc  ? scoreLevel(sc)  : null;
     const rk  = getRokuyo(calYear, calMonth, d);
     const hol = holidayName(calYear, calMonth, d);
-    const hasEv = eventsFor(dkey(dt)).length > 0;
+    const ev = eventsFor(dkey(dt));
 
     let dots = '';
     if (tensha) dots += '<div class="dot tensha"></div>';
@@ -1008,10 +1012,10 @@ function renderCalendar() {
     if (isFull) dots += '<div class="dot fullmoon"></div>';
 
     html += `<div class="cal-day${isToday?' today':''}" onclick="openDayDetail(${calYear},${calMonth},${d})">
-      ${hasEv ? '<span class="cal-pin">📌</span>' : ''}
       <div class="cal-num ${numCls}${hol?' hol':''}">${d}</div>
       <div class="cal-rk ${rokuyoCalCls(rk.idx)}">${ROKUYO[rk.idx]}</div>
       ${hol ? `<div class="cal-hol">${esc(hol)}</div>` : ''}
+      ${ev.length ? `<div class="cal-ev">${esc(ev[0].text)}</div>${ev.length>1?`<div class="cal-ev-more">+${ev.length-1}</div>`:''}` : ''}
       <div class="cal-dots">${dots}</div>
       ${sl ? `<div class="cal-score" style="width:${sc}%;background:${sl.bar}"></div>` : ''}
     </div>`;
